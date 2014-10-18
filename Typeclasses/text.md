@@ -12,7 +12,7 @@ vim: ft=markdown
    - Class in a more mathematical sense
 * Чем похоже, чем отличается от интерфейсов в Java
 * Стандартные классы типов:
-   - Eq (not everything has decidable equality)
+   - Eq (no built-in equalities)
    - Show (yet another derivable instance)
    - Ord (inheritance)
    - Num (polymorphic number literals)
