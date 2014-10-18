@@ -11,8 +11,8 @@ vim: ft=markdown
     - Typeclasses as a number of methods
     - Class in a more mathematical sense
 * Чем похоже, чем отличается от интерфейсов в Java
-    - In Java an overloaded method is resolved base on its arguments
-      (an implicit this argument)
+    - In Java an overloaded method is resolved based on its arguments
+      (an implicit `this` argument)
     - In Haskell it is inferred from the complete type signature
 * Стандартные классы типов:
     - Eq (no built-in equalities)
