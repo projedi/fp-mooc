@@ -2,7 +2,8 @@
 vim: ft=markdown
 ---
 
-# What I know about typeclasses
+What I know about typeclasses
+=============================
 
 * Что такое параметрический и ad-hoc полиморфизм:
     - Parametric: Works the same way for every single type
@@ -28,3 +29,31 @@ vim: ft=markdown
     - Flexible instances & contexts
 * Implementation of typeclasses. How do they look in Core:
     - Dictionary passing
+
+Уроки
+=====
+
+Классы типов
+------------
+
+### Step 1 (Parametric & ad-hoc polymorphism)
+
+### Step 2 (Typeclasses)
+
+### Step 3 (Similarities with Java interfaces)
+
+### Step 4 (Contexts)
+
+Стандартные классы типов
+------------------------
+
+### Step 1 (Eq - "No built-in equalities")
+
+### Step 2 (Show - "Yet another derivable instance")
+
+### Step 3 (Ord - "Inheritance")
+
+### Step 4 (Num - "Polymorphic number literals")
+
+Advanced typeclassing
+---------------------
