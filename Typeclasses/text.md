@@ -5,10 +5,10 @@ vim: ft=markdown
 What I know about typeclasses
 =============================
 
-* Что такое параметрический и ad-hoc полиморфизм:
+* Что такое параметрический и ad hoc полиморфизм:
     - Parametric: Works the same way for every single type
-    - Ad-hoc: For every type there is a special implementation
-* Как ad-hoc работает в Haskell:
+    - Ad hoc: For every type there is a special implementation
+* Как ad hoc работает в Haskell:
     - Typeclasses as a number of methods
     - Class in a more mathematical sense
 * Чем похоже, чем отличается от интерфейсов в Java
@@ -36,7 +36,7 @@ What I know about typeclasses
 Классы типов
 ------------
 
-### Step 1 (Parametric & ad-hoc polymorphism)
+### Step 1 (Parametric & ad hoc polymorphism)
 
 ### Step 2 (Typeclasses)
 
