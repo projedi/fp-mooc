@@ -1,0 +1,68 @@
+Typeclasses.method1 :: forall a_apD. Typeclasses.TC a_apD => a_apD -> GHC.Base.String
+Typeclasses.method1 =
+  \(@a_apD) (tpl_sMP :: Typeclasses.TC a_apD) ->
+    case tpl_sMP
+    of _
+    { Typeclasses.D:TC tpl_sMR _ -> tpl_sMR
+    }
+
+Typeclasses.method2 :: forall a_apD. Typeclasses.TC a_apD => GHC.Base.String -> a_apD
+Typeclasses.method2 =
+  \(@a_apD) (tpl_sMT :: Typeclasses.TC a_apD) ->
+    case tpl_sMT
+    of _
+    { Typeclasses.D:TC _ tpl_sMW -> tpl_sMW
+    }
+
+Typeclasses.f :: forall a_apL. Typeclasses.TC a_apL => a_apL -> GHC.Types.Char
+Typeclasses.f =
+  \(@a_aK5) ($dTC_sMX :: Typeclasses.TC a_aK5) ->
+    let {
+      sat_sMY :: a_aK5 -> [GHC.Types.Char]
+      sat_sMY = Typeclasses.method1 @a_aK5 $dTC_sMX
+    } in
+    GHC.Base..  @[GHC.Types.Char] @GHC.Types.Char @a_aK5
+      (GHC.List.head @GHC.Types.Char)
+      sat_sMY
+
+$cmethod2_rJS :: GHC.Base.String -> GHC.Types.Int
+$cmethod2_rJS = \_ -> GHC.Types.I# 0
+
+$cmethod1_rKM :: GHC.Types.Int -> GHC.Base.String
+$cmethod1_rKM = \_ -> GHC.CString.unpackCString# "Int"#
+
+Typeclasses.$fTCInt :: Typeclasses.TC GHC.Types.Int
+Typeclasses.$fTCInt = Typeclasses.D:TC @GHC.Types.Int $cmethod1_rKM $cmethod2_rJS
+
+$cmethod3_rKN :: GHC.Base.String -> GHC.Base.String
+$cmethod3_rKN = \(x_sN1 :: GHC.Base.String) -> x_sN1
+
+$cmethod4_rKO :: GHC.Base.String -> GHC.Base.String
+$cmethod4_rKO =
+  \(x_sN2 :: GHC.Base.String) ->
+    let {
+      sat_sN3 :: [GHC.Types.Char]
+      sat_sN3 = GHC.CString.unpackCString# "String: "#
+    } in
+    GHC.Base.++ @GHC.Types.Char sat_sN3 x_sN2
+
+Typeclasses.$fTC[] :: Typeclasses.TC GHC.Base.String
+Typeclasses.$fTC[] =
+  Typeclasses.D:TC @GHC.Base.String $cmethod4_rKO $cmethod3_rKN
+
+sat_sN4 :: GHC.Types.Int -> [GHC.Types.Char]
+sat_sN4 = Typeclasses.method1 @GHC.Types.Int Typeclasses.$fTCInt
+
+Typeclasses.h :: GHC.Types.Int -> GHC.Types.Char
+Typeclasses.h =
+  GHC.Base.. @[GHC.Types.Char] @GHC.Types.Char @GHC.Types.Int
+    (GHC.List.head @GHC.Types.Char)
+    sat_sN4
+
+Typeclasses.D:TC
+  :: forall a_apD. (a_apD -> GHC.Base.String)
+     -> (GHC.Base.String -> a_apD) -> Typeclasses.TC a_apD
+Typeclasses.D:TC =
+  \(@a_apD) (eta_B2 :: a_apD -> GHC.Base.String)
+   (eta_B1 :: GHC.Base.String -> a_apD) ->
+    Typeclasses.D:TC @a_apD eta_B2 eta_B1
