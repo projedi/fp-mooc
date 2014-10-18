@@ -1,2 +1,2 @@
 text.html: text.md
-	pandoc -o $@ $^
+	pandoc --smart -o $@ $^

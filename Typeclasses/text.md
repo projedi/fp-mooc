@@ -47,13 +47,13 @@ What I know about typeclasses
 Стандартные классы типов
 ------------------------
 
-### Step 1 (Eq - "No built-in equalities")
+### Step 1 (Eq --- "No built-in equalities")
 
-### Step 2 (Show - "Yet another derivable instance")
+### Step 2 (Show --- "Yet another derivable instance")
 
-### Step 3 (Ord - "Inheritance")
+### Step 3 (Ord --- "Inheritance")
 
-### Step 4 (Num - "Polymorphic number literals")
+### Step 4 (Num --- "Polymorphic number literals")
 
 Advanced typeclassing
 ---------------------
