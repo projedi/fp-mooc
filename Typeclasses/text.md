@@ -21,5 +21,7 @@ vim: ft=markdown
    - Multi-parameter + fundeps
    - Orphan instances (and how to segfault with 'em)
    - Overlapping + undecidable instances
+   - Type synonym instances
+   - Flexible instances & contexts
 * Implementation of typeclasses. How do they look in Core:
    - Dictionary passing
