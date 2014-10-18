@@ -133,9 +133,18 @@ What I know about typeclasses
 
 Первый `(==)` пришел из `Eq a`, а второй --- рекурсивный вызов в `Eq [a]`.
 
-### Step 4 (Similarities with Java interfaces)
+### Step 4 (Exercise on implementing Eq instance)
 
-### Step 5 (Contexts)
+    data Tree a
+       = Leaf a
+       | Branch (Tree a) a (Tree a)
+
+    instance Eq a => Eq (Tree a) where
+       ...
+
+### Step 5 (Similarities with Java interfaces)
+
+### Step 6 (Contexts)
 
 Стандартные классы типов
 ------------------------
