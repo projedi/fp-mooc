@@ -139,8 +139,7 @@ What I know about typeclasses
        = Leaf a
        | Branch (Tree a) a (Tree a)
 
-    instance Eq a => Eq (Tree a) where
-       ...
+    ...
 
 ### Step 5 (Similarities with Java interfaces)
 
