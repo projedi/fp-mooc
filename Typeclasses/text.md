@@ -1,6 +1,6 @@
----
+<!--
 vim: ft=markdown
----
+-->
 
 What I know about typeclasses
 =============================
