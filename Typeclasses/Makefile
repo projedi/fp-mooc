@@ -1,2 +1,2 @@
 text.html: text.md
-	pandoc --smart -o $@ $^
+	pandoc --css=style.css --smart -o $@ $^
