@@ -17,7 +17,7 @@ vim: ft=markdown
 
     map :: (a -> b) -> [a] -> [b]
     map f [] = []
-    map f (x :: xs) = f x :: map f xs
+    map f (x : xs) = f x : map f xs
 
 Функцию `map` можно применить к аргументам с типами `Int -> Int`, `[Int]`:
 
