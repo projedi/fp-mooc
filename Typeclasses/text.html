@@ -58,7 +58,7 @@ map f (x : xs) = f x : map f xs</code></pre>
 <pre><code>instance Eq Int where
    (I# i1) == (I# i2) = i1 ==# i2
    (I# i1) /= (I# i2) = i1 /=# i2</code></pre>
-<p>В интересах эффективности для <code>(/=)</code> используется специальная реализация.</p>
+<p><code>(==#)</code>, <code>(/=#)</code> — встроенные операторы проверки на равенство для примитивного типа <code>Int#</code>. В интересах эффективности для <code>(/=)</code> используется специальная реализация.</p>
 <p>Теперь для списков:</p>
 <pre><code>instance Eq a =&gt; Eq [a] where
    [] == [] = True
@@ -74,7 +74,7 @@ map f (x : xs) = f x : map f xs</code></pre>
 
 ...</code></pre>
 <h3 id="step-5-similarities-with-java-interfaces">Step 5 (Similarities with Java interfaces)</h3>
-<p>Если смотреть на классы типов со стороны ООП, то они напоминают интерфейсы в Java: задают интерфейс из функций. Но есть отличие: в Java конкретная реализация выбирается по неявному аргументу <code>this</code>, а в Haskell участвует вся сигнатура функции:</p>
+<p>Если смотреть на классы типов со стороны ООП, то они напоминают интерфейсы в Java. Но есть отличие: в Java конкретная реализация выбирается по неявному аргументу <code>this</code>, а в Haskell участвует вся сигнатура функции:</p>
 <pre><code>class C a where
    m1 :: a -&gt; Integer
    m2 :: Integer -&gt; a
