@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+<!--
+vim: ft=markdown
+-->
+<h1 id="уроки">Уроки</h1>
+<h2 id="классы-типов">Классы типов</h2>
+<h3 id="step-1-parametric-polymorphism">Step 1 (Parametric polymorphism)</h3>
+<p>Полиморфизм — механизм, позволяющий оперировать с данными разного типа используя единый интерфейс.</p>
+<p>Рассмотрим, к примеру:</p>
+<pre><code>map :: (a -&gt; b) -&gt; [a] -&gt; [b]
+map f [] = []
+map f (x : xs) = f x : map f xs</code></pre>
+<p>Функцию <code>map</code> можно применить к аргументам с типами <code>Int -&gt; Int</code>, <code>[Int]</code>:</p>
+<pre><code>map (*2) [1, 2, 3] = [2, 4, 6]</code></pre>
+<p>и к аргументам с типами <code>Double -&gt; Integer</code>, <code>[Double]</code>:</p>
+<pre><code>map round [1.41, 2.71, 3.14] = [1, 3, 3]</code></pre>
+<p>При этом, код <code>map</code> используется один и тот же. Это называется <strong>“параметрический полиморфизм”</strong>. Он нам дает некоторые гарантии на поведение функции. Компилятор гарантирует, что любая функция с типом <code>(a -&gt; b) -&gt; [a] -&gt; [b]</code> может только:</p>
+<ul>
+<li>всегда возвращать пустой список,</li>
+<li>на основании индексов переупорядочить элементы второго аргумента,</li>
+<li>на основании индексов выбрать лишь некоторые элементы второго аргумента,</li>
+<li>на основании индексов клонировать некоторые элементы второго аргумента,</li>
+<li>применить к каждому элементу второго аргумента (возможно измененного предыдущими тремя правилами) первый аргумент и вернуть полученный список.</li>
+</ul>
+<p>Другими словами, поведение функции не может зависеть от того, какие типы мы подставляем вместо <code>a</code> и <code>b</code>.</p>
+<h3 id="step-2-ad-hoc-polymorphism">Step 2 (Ad hoc polymorphism)</h3>
+<p>Рассмотрим теперь равенство, хотим чтобы оно было полиморфным, попробуем определить с типом <code>(==) :: a -&gt; a -&gt; Bool</code>. Согласно параметрическому полиморфизму, оно должно исполняться одинаково для всех типов:</p>
+<dl>
+<dt>Для примитивных типов <code>Char#</code>, <code>Int#</code>, … (<code>Char</code>, <code>Int</code> — обертки над ними).</dt>
+<dd>Можно сравнивать только значения.
+</dd>
+<dt>Для алгебраических типов <code>[a]</code>, <code>Maybe a</code>, ….</dt>
+<dd>Хотим сравнивать значения (для каждого конкретного типа по-своему). Информация, что два элемента ссылаются на одну и ту же область памяти для нас бессмысленна, поэтому сравнение по ссылкам не подходит.
+</dd>
+<dt>Для функциональных типов <code>Int -&gt; Int</code>, <code>a -&gt; b</code>, ….</dt>
+<dd>Можно сравнивать только по ссылкам (например, для функций <code>f :: Integer -&gt; Int</code>, <code>g :: Integer -&gt; Int</code> невозможно определить равенство по значению, так как множество значений аргумента бесконечно). Но, как и в случае с алгебраическими типами, эта информация для нас бессмысленна и хотелось бы просто запретить сравнение функций.
+</dd>
+</dl>
+<p>То есть необходимо определить <code>(==)</code> так, чтобы его можно было применять к элементам разных типов, но чтобы конкретная реализация могла зависеть от этого типа. Такой вид полиморфизма называется <strong>“ad hoc полифорфизм”</strong>.</p>
+<h3 id="step-3-typeclasses">Step 3 (Typeclasses)</h3>
+<p>В Haskell ad hoc полиморфизм добавляется с помощью классов типов.</p>
+<pre><code>class Eq a where
+   (==) :: a -&gt; a -&gt; Bool
+   (/=) :: a -&gt; a -&gt; Bool
+   x /= y = not (x == y)</code></pre>
+<p>Этот код задает класс типов <code>Eq</code>. Если рассматривать типы как множества, то классы типов можно понимать в математическом смысле: совокупность множеств, объединенная некоторым признаком. В случае <code>Eq</code> мы определяем совокупность множеств, таких что для каждого множества <code>a</code> определена операция <code>(==) :: a -&gt; a -&gt; Bool</code> и операция <code>(/=) :: a -&gt; a -&gt; Bool</code>. При этом <code>(/=)</code> имеет реализацию по умолчанию.</p>
+<p>Чтобы сказать, что тип принадлежит какому-то классу, необходимо написать инстанс. Для <code>Int</code> в стандартной библиотеке это делается так:</p>
+<pre><code>instance Eq Int where
+   (I# i1) == (I# i2) = i1 ==# i2
+   (I# i1) /= (I# i2) = i1 /=# i2</code></pre>
+<p>В интересах эффективности для <code>(/=)</code> используется специальная реализация.</p>
+<p>Теперь для списков:</p>
+<pre><code>instance Eq a =&gt; Eq [a] where
+   [] == [] = True
+   (x :: xs) == (y :: ys) = x == y &amp;&amp; xs == ys
+   _ == _ = False</code></pre>
+<p><code>Eq a =&gt; Eq [a]</code> следует читать как “при условии, что <code>a</code> принадлежит классу <code>Eq</code>, <code>[a]</code> принадлежит классу <code>Eq</code>”. Обратим внимание на реализацию второго кейса:</p>
+<pre><code>x == y &amp;&amp; xs == ys</code></pre>
+<p>Первый <code>(==)</code> пришел из <code>Eq a</code>, а второй — рекурсивный вызов в <code>Eq [a]</code>.</p>
+<h3 id="step-4-exercise-on-implementing-eq-instance">Step 4 (Exercise on implementing Eq instance)</h3>
+<pre><code>data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+...</code></pre>
+<h3 id="step-5-similarities-with-java-interfaces">Step 5 (Similarities with Java interfaces)</h3>
+<p>Если смотреть на классы типов со стороны ООП, то они напоминают интерфейсы в Java: задают интерфейс из функций. Но есть отличие: в Java конкретная реализация выбирается по неявному аргументу <code>this</code>, а в Haskell участвует вся сигнатура функции:</p>
+<pre><code>class C a where
+   m1 :: a -&gt; Integer
+   m2 :: Integer -&gt; a
+   m3 :: [a] -&gt; Integer
+
+instance C Int where
+   m1 x = ...
+   m2 i = ...
+   m3 xs = ...</code></pre>
+<p>В <code>f1</code>, <code>f2</code>, <code>f3</code> реализации <code>m1</code>, <code>m2</code>, <code>m3</code> выбираются из инстанса <code>C Int</code>:</p>
+<pre><code>a1, a2, a3 :: Int
+a1 = 1
+a2 = 2
+a3 = 3
+
+f1 :: Integer
+f1 = m1 a1
+
+f2 :: Int
+f2 = m2 0
+
+f3 :: Integer
+f3 = m3 [a1, a2, a3]</code></pre>
+<h3 id="step-6-contexts">Step 6 (Contexts)</h3>
+<h2 id="стандартные-классы-типов">Стандартные классы типов</h2>
+<h3 id="step-1-eq-no-built-in-equalities">Step 1 (Eq — “No built-in equalities”)</h3>
+<h3 id="step-2-show-yet-another-derivable-instance">Step 2 (Show — “Yet another derivable instance”)</h3>
+<h3 id="step-3-ord-inheritance">Step 3 (Ord — “Inheritance”)</h3>
+<h3 id="step-4-num-polymorphic-number-literals">Step 4 (Num — “Polymorphic number literals”)</h3>
+<h2 id="advanced-typeclassing">Advanced typeclassing</h2>
+<h1 id="todo">TODO</h1>
+<ul>
+<li>Deriving + standalone deriving</li>
+<li>Multi-parameter + fundeps</li>
+<li>Orphan instances (and how to segfault with ’em)</li>
+<li>Overlapping + undecidable instances</li>
+<li>Type synonym instances</li>
+<li>Flexible instances &amp; contexts</li>
+<li>Implementation of typeclasses. How do they look in Core.</li>
+</ul>
+</body>
+</html>
