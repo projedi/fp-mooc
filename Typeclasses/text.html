@@ -62,7 +62,7 @@ map f (x : xs) = f x : map f xs</code></pre>
 <p>Теперь для списков:</p>
 <pre><code>instance Eq a =&gt; Eq [a] where
    [] == [] = True
-   (x :: xs) == (y :: ys) = x == y &amp;&amp; xs == ys
+   (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
    _ == _ = False</code></pre>
 <p><code>Eq a =&gt; Eq [a]</code> следует читать как “при условии, что <code>a</code> принадлежит классу <code>Eq</code>, <code>[a]</code> принадлежит классу <code>Eq</code>”. Обратим внимание на реализацию второго кейса:</p>
 <pre><code>x == y &amp;&amp; xs == ys</code></pre>

@@ -95,7 +95,7 @@ vim: ft=markdown
 
     instance Eq a => Eq [a] where
        [] == [] = True
-       (x :: xs) == (y :: ys) = x == y && xs == ys
+       (x : xs) == (y : ys) = x == y && xs == ys
        _ == _ = False
 
 `Eq a => Eq [a]` следует читать как "при условии, что `a` принадлежит классу `Eq`,
