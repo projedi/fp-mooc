@@ -98,7 +98,30 @@ f2 = m2 0
 
 f3 :: Integer
 f3 = m3 [a1, a2, a3]</code></pre>
-<h3 id="step-6-contexts">Step 6 (Contexts)</h3>
+<h3 id="step-6-exercise-on-implementing-your-own-typeclass">Step 6 (Exercise on implementing your own typeclass)</h3>
+<p>Implement a type class <code>FromList</code> that has a method <code>fromList</code>. And instances for List and Tree</p>
+<pre><code>data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+...</code></pre>
+<h3 id="step-7-contexts">Step 7 (Contexts)</h3>
+<p>Посмотрим теперь на тип равенства:</p>
+<pre><code>(==) :: (Eq a) =&gt; a -&gt; a -&gt; Bool</code></pre>
+<p>То, что стоит слева от <code>=&gt;</code> называется контекстом. Такой тип следует читать как “<code>a -&gt; a -&gt; a</code> при условии, что <code>a</code> принадлежит классу <code>Eq</code>”.</p>
+<p>Попробуем теперь написать функцию сортировки для списков:</p>
+<pre><code>sort :: (Ord a) =&gt; [a] -&gt; [a]
+sort [] = []
+sort (x : xs) = sort ls ++ [x] ++ sort rs
+ where (ls, rs) = partition (&lt;x) xs</code></pre>
+<p><code>Ord</code> — класс типов, задающий сравнимые типы. В числе прочих методов, в нем определен оператор <code>(&lt;) :: (Ord a) =&gt; a -&gt; a -&gt; Bool</code>. <code>(Ord a) =&gt;</code> в типе <code>sort</code> требуется ровно для того, чтобы использовать <code>(&lt;)</code>.</p>
+<h3 id="step-8-exercise-on-using-typeclasses">Step 8 (Exercise on using typeclasses)</h3>
+<p>Implement insert into a binary search tree:</p>
+<pre><code>data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+...</code></pre>
 <h2 id="стандартные-классы-типов">Стандартные классы типов</h2>
 <h3 id="step-1-eq-no-built-in-equalities">Step 1 (Eq — “No built-in equalities”)</h3>
 <h3 id="step-2-show-yet-another-derivable-instance">Step 2 (Show — “Yet another derivable instance”)</h3>

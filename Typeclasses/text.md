@@ -146,7 +146,47 @@ vim: ft=markdown
     f3 :: Integer
     f3 = m3 [a1, a2, a3]
 
-### Step 6 (Contexts)
+### Step 6 (Exercise on implementing your own typeclass)
+
+Implement a type class `FromList` that has a method `fromList`.
+And instances for List and Tree
+
+    data Tree a
+       = Leaf a
+       | Branch (Tree a) a (Tree a)
+
+    ...
+
+### Step 7 (Contexts)
+
+Посмотрим теперь на тип равенства:
+
+    (==) :: (Eq a) => a -> a -> Bool
+
+То, что стоит слева от `=>` называется контекстом. Такой
+тип следует читать как "`a -> a -> a` при условии, что `a`
+принадлежит классу `Eq`".
+
+Попробуем теперь написать функцию сортировки для списков:
+
+    sort :: (Ord a) => [a] -> [a]
+    sort [] = []
+    sort (x : xs) = sort ls ++ [x] ++ sort rs
+     where (ls, rs) = partition (<x) xs
+
+`Ord` --- класс типов, задающий сравнимые типы. В числе
+прочих методов, в нем определен оператор `(<) :: (Ord a) => a -> a -> Bool`.
+`(Ord a) =>` в типе `sort` требуется ровно для того, чтобы использовать `(<)`.
+
+### Step 8 (Exercise on using typeclasses)
+
+Implement insert into a binary search tree:
+
+    data Tree a
+       = Leaf a
+       | Branch (Tree a) a (Tree a)
+
+    ...
 
 Стандартные классы типов
 ------------------------
