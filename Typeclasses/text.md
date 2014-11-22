@@ -42,7 +42,7 @@ vim: ft=markdown
 Другими словами, поведение функции не может зависеть от того, какие типы мы
 подставляем вместо `a` и `b`.
 
-### Step 2 (Ad hoc polymorphism)
+### Step 2 (Implementing equality)
 
 Рассмотрим теперь равенство, хотим чтобы оно было полиморфным, попробуем определить
 с типом `(==) :: a -> a -> Bool`. Согласно параметрическому
@@ -65,18 +65,182 @@ vim: ft=markdown
     Но, как и в случае с алгебраическими типами, эта информация для нас бессмысленна и хотелось
     бы просто запретить сравнение функций.
 
-То есть необходимо определить `(==)` так, чтобы его можно было применять к элементам разных
-типов, но чтобы конкретная реализация могла зависеть от этого типа. Такой вид полиморфизма
-называется **"ad hoc полифорфизм"**.
+Значит, равенство должно иметь свою реализацию для каждого типа. Но как это сделать?
 
-### Step 3 (Typeclasses)
+### Step 3 (Implementing `isElemOf`)
 
-В Haskell ad hoc полиморфизм добавляется с помощью классов типов.
+Попробуем реализовать функцию, использующую равенство, --- `isElemOf`:
+
+    isElemOf :: (a -> a -> Bool) -> a -> [a] -> Bool
+    isElemOf _ _ [] = False
+    isElemOf eq x (y : ys) = (x `eq` y) || isElemOf eq x ys
+
+Получилось! Достаточно просто передавать дополнительным аргументом
+реализацию равенства.
+
+### Step 4 (Exercise: implement `isSublistOf`)
+
+Реализовать `isSublistOf :: (a -> a -> Bool) -> [a] -> [a] -> Bool` в терминах `isElemOf`.
+
+### Step 5 (Typeclasses)
+
+А что если для нашей функции мы хотим передать не только реализию равенства,
+а еще преобразование в строку и оператор `(<)`. Придется передавать 3 дополнительных
+аргумента и при этом первый и третий легко перепутать, так как они имеют одинаковый
+тип `a -> a -> Bool`. Нельзя ли это как-нибудь автоматизировать?
+
+Оказывается, что можно --- Haskell предоставляет механизм классов типов:
+
+    class Eq a where
+       (==) :: a -> a -> Bool
+
+    class Ord a where
+       (<) :: a -> a -> Bool
+
+    class Show a where
+       show :: a -> String
+
+    sort :: (Ord a) => [a] -> [a]
+    sort [] = []
+    sort (x : xs) = let (ls, rs) = go xs in sort ls ++ [x] ++ sort rs
+     where go [] = ([], [])
+           go (y : ys) =
+              let (ls, rs) = go ys
+              in if y < x then (y : ls, rs) else (ls, y : rs)
+
+    nubSorted :: (Eq a) => [a] -> [a]
+    nubSorted [] = []
+    nubSorted (x : xs) = x : nubSorted (go xs)
+     where go [] = []
+           go (y : ys)
+            | x == y = go ys
+            | otherwise = y : ys
+
+    f :: (Eq a, Ord a, Show a) => [a] -> String
+    f = show . nubSorted . sort
+
+Мы помещаем функцию `(==)` в _класс_ `Eq` и неявно её передаем в функции
+`f`, `nubSorted` указывая `Eq a` в _контексте_.
+
+### Step 6 (Exercise: implement `isSublistOf` again)
+
+Реализовать `isSublistOf :: (Eq a) => [a] -> [a] -> Bool` в терминах `isElemOf`.
+
+### Step 7 (Typeclass instances)
+
+Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию.
+Вспомним, что мы начинали с проблемы, что равенство необходимо определять для
+каждого типа по-своему. Что и сделаем, синтаксически это выглядит так:
+
+    instance Eq Int where
+       (I# i1) == (I# i2) = i1 ==# i2
+
+    instance (Eq a) => Eq [a] where
+       [] == [] = True
+       (x : xs) == (y : ys) = x == y && xs == ys
+       _ == _ = False
+
+Мы определяем эти _инстансы_ на верхнем уровне и требуем, чтобы для каждого типа
+было не больше одного инстанса. Здесь `(==#)` --- встроенный оператор равенства для
+типа `Int#` и во втором клозе `(==)` для списков в `x == y` используется равенство
+из `Eq a`, а в `xs == ys` используется равенство из `Eq [a]` (рекурсивный вызов).
+
+### Step 8 (Exercise: Implement Eq instance for binary trees)
+
+Реализовать инстанс `Eq` для дерева:
+
+    data Tree a
+       = Leaf a
+       | Branch (Tree a) a (Tree a)
+
+### Step 9 (More on typeclasses)
+
+Но нужно ли ограничиваться одной функцией для класса типов? Нет:
 
     class Eq a where
        (==) :: a -> a -> Bool
        (/=) :: a -> a -> Bool
        x /= y = not (x == y)
+
+    class (Eq a) => Ord a where
+       compare :: a -> a -> Ordering
+       compare x y
+        | x == y = EQ
+        | x <= y = LT
+        | otherwise = GT
+
+       (<), (<=), (>), (>=) :: a -> a -> Bool
+       x < y =
+          case compare x y of
+             LT -> True
+             _ -> False
+       x <= y =
+          case compare x y of
+             GT -> False
+             _ -> True
+       x > y =
+          case compare x y of
+             GT -> True
+             _ -> False
+       x >= y =
+          case compare x y of
+             LT -> False
+             _ -> True
+
+       max, min :: a -> a -> a
+       max x y = if x <= y then y else x
+       min x y = if x <= y then x else y
+
+    instance Eq Int where
+       (I# i1) == (I# i2) = i1 ==# i2
+       (I# i1) /= (I# i2) = i1 /=# i2
+
+    instance Eq a => Eq [a] where
+       [] == [] = True
+       (x : xs) == (y : ys) = x == y && xs == ys
+       _ == _ = False
+
+    instance (Ord a) => Ord [a] where
+       compare [] [] = EQ
+       compare [] (_ : _) = LT
+       compare (_ : _) [] = GT
+       compare (x : xs) (y : ys) =
+          case compare x y of
+             EQ -> compare xs ys
+             other -> other
+
+    instance Ord Int where
+       (I# x#) `compare` (I# y#)
+        | isTrue# (x# <# y#) = LT
+        | isTrue# (x# ==# y#) = EQ
+        | otherwise = GT
+       (I# x) < (I# y) = isTrue# (x <# y)
+       (I# x) <= (I# y) = isTrue# (x <=# y)
+       (I# x) >= (I# y) = isTrue# (x >=# y)
+       (I# x) > (I# y) = isTrue# (x ># y)
+
+Здесь в `Eq` определены 2 функции `(==)`, `(/=)` и у `(/=)` есть реализация
+по умолчанию. В инстансе для списка используется именно она, а в инстансе для
+`Int` она переопределена в интересах эффективности.
+
+`Ord` интереснее: во-первых, определяя инстанс для `Ord`, необходимо так же определять
+инстанс `Eq` (присутствие контекста `(Eq a) =>` при определении `Ord`). Во-вторых,
+каждая функция имеет реализацию по-умолчанию. При этом, `compare` определен через `(<=)`
+и `(<=)` определен через `compare`. Поэтому, чтобы программа не ушла в бесконечный цикл,
+нужно определить хотя бы один из них. Обычно определяют `compare` в интересах эффективности.
+
+### Step 10 (Exercise: More complex typeclasses somehow)
+
+### Step 11 (Philosophical concepts and whatnot)
+
+<!--
+То есть необходимо определить `(==)` так, чтобы его можно было применять к элементам разных
+типов, но чтобы конкретная реализация могла зависеть от этого типа. Такой вид полиморфизма
+называется **"ad hoc полифорфизм"**.
+-->
+
+В Haskell ad hoc полиморфизм добавляется с помощью классов типов.
+
 
 Этот код задает класс типов `Eq`. Если рассматривать типы как множества,
 то классы типов можно понимать в математическом смысле: совокупность множеств,
@@ -108,16 +272,6 @@ vim: ft=markdown
 
 Первый `(==)` пришел из `Eq a`, а второй --- рекурсивный вызов в `Eq [a]`.
 
-### Step 4 (Exercise on implementing Eq instance)
-
-    data Tree a
-       = Leaf a
-       | Branch (Tree a) a (Tree a)
-
-    ...
-
-### Step 5 (Similarities with Java interfaces)
-
 Если смотреть на классы типов со стороны ООП, то они напоминают
 интерфейсы в Java. Но есть отличие: в Java конкретная реализация
 выбирается по неявному аргументу `this`, а в Haskell
@@ -148,48 +302,6 @@ vim: ft=markdown
 
     f3 :: Integer
     f3 = m3 [a1, a2, a3]
-
-### Step 6 (Exercise on implementing your own typeclass)
-
-Implement a type class `FromList` that has a method `fromList`.
-And instances for List and Tree
-
-    data Tree a
-       = Leaf a
-       | Branch (Tree a) a (Tree a)
-
-    ...
-
-### Step 7 (Contexts)
-
-Посмотрим теперь на тип равенства:
-
-    (==) :: (Eq a) => a -> a -> Bool
-
-То, что стоит слева от `=>` называется контекстом. Такой
-тип следует читать как "`a -> a -> a` при условии, что `a`
-принадлежит классу `Eq`".
-
-Попробуем теперь написать функцию сортировки для списков:
-
-    sort :: (Ord a) => [a] -> [a]
-    sort [] = []
-    sort (x : xs) = sort ls ++ [x] ++ sort rs
-     where (ls, rs) = partition (<x) xs
-
-`Ord` --- класс типов, задающий сравнимые типы. В числе
-прочих методов, в нем определен оператор `(<) :: (Ord a) => a -> a -> Bool`.
-`(Ord a) =>` в типе `sort` требуется ровно для того, чтобы использовать `(<)`.
-
-### Step 8 (Exercise on using typeclasses)
-
-Implement insert into a binary search tree:
-
-    data Tree a
-       = Leaf a
-       | Branch (Tree a) a (Tree a)
-
-    ...
 
 Стандартные классы типов
 ------------------------

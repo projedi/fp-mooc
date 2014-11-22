@@ -33,7 +33,7 @@ map f (x : xs) = f x : map f xs</code></pre>
 <li>применить к каждому элементу второго аргумента (возможно измененного предыдущими тремя правилами) первый аргумент и вернуть полученный список.</li>
 </ul>
 <p>Другими словами, поведение функции не может зависеть от того, какие типы мы подставляем вместо <code>a</code> и <code>b</code>.</p>
-<h3 id="step-2-ad-hoc-polymorphism">Step 2 (Ad hoc polymorphism)</h3>
+<h3 id="step-2-implementing-equality">Step 2 (Implementing equality)</h3>
 <p>Рассмотрим теперь равенство, хотим чтобы оно было полиморфным, попробуем определить с типом <code>(==) :: a -&gt; a -&gt; Bool</code>. Согласно параметрическому полиморфизму, оно должно исполняться одинаково для всех типов:</p>
 <ul>
 <li><p>Для примитивных типов <code>Char#</code>, <code>Int#</code>, … (<code>Char</code>, <code>Int</code> — обертки над ними).</p>
@@ -43,13 +43,136 @@ map f (x : xs) = f x : map f xs</code></pre>
 <li><p>Для функциональных типов <code>Int -&gt; Int</code>, <code>a -&gt; b</code>, ….</p>
 <p>Можно сравнивать только по ссылкам (например, для функций <code>f :: Integer -&gt; Int</code>, <code>g :: Integer -&gt; Int</code> невозможно определить равенство по значению, так как множество значений аргумента бесконечно). Но, как и в случае с алгебраическими типами, эта информация для нас бессмысленна и хотелось бы просто запретить сравнение функций.</p></li>
 </ul>
-<p>То есть необходимо определить <code>(==)</code> так, чтобы его можно было применять к элементам разных типов, но чтобы конкретная реализация могла зависеть от этого типа. Такой вид полиморфизма называется <strong>“ad hoc полифорфизм”</strong>.</p>
-<h3 id="step-3-typeclasses">Step 3 (Typeclasses)</h3>
-<p>В Haskell ad hoc полиморфизм добавляется с помощью классов типов.</p>
+<p>Значит, равенство должно иметь свою реализацию для каждого типа. Но как это сделать?</p>
+<h3 id="step-3-implementing-iselemof">Step 3 (Implementing <code>isElemOf</code>)</h3>
+<p>Попробуем реализовать функцию, использующую равенство, — <code>isElemOf</code>:</p>
+<pre><code>isElemOf :: (a -&gt; a -&gt; Bool) -&gt; a -&gt; [a] -&gt; Bool
+isElemOf _ _ [] = False
+isElemOf eq x (y : ys) = (x `eq` y) || isElemOf eq x ys</code></pre>
+<p>Получилось! Достаточно просто передавать дополнительным аргументом реализацию равенства.</p>
+<h3 id="step-4-exercise-implement-issublistof">Step 4 (Exercise: implement <code>isSublistOf</code>)</h3>
+<p>Реализовать <code>isSublistOf :: (a -&gt; a -&gt; Bool) -&gt; [a] -&gt; [a] -&gt; Bool</code> в терминах <code>isElemOf</code>.</p>
+<h3 id="step-5-typeclasses">Step 5 (Typeclasses)</h3>
+<p>А что если для нашей функции мы хотим передать не только реализию равенства, а еще преобразование в строку и оператор <code>(&lt;)</code>. Придется передавать 3 дополнительных аргумента и при этом первый и третий легко перепутать, так как они имеют одинаковый тип <code>a -&gt; a -&gt; Bool</code>. Нельзя ли это как-нибудь автоматизировать?</p>
+<p>Оказывается, что можно — Haskell предоставляет механизм классов типов:</p>
+<pre><code>class Eq a where
+   (==) :: a -&gt; a -&gt; Bool
+
+class Ord a where
+   (&lt;) :: a -&gt; a -&gt; Bool
+
+class Show a where
+   show :: a -&gt; String
+
+sort :: (Ord a) =&gt; [a] -&gt; [a]
+sort [] = []
+sort (x : xs) = let (ls, rs) = go xs in sort ls ++ [x] ++ sort rs
+ where go [] = ([], [])
+       go (y : ys) =
+          let (ls, rs) = go ys
+          in if y &lt; x then (y : ls, rs) else (ls, y : rs)
+
+nubSorted :: (Eq a) =&gt; [a] -&gt; [a]
+nubSorted [] = []
+nubSorted (x : xs) = x : nubSorted (go xs)
+ where go [] = []
+       go (y : ys)
+        | x == y = go ys
+        | otherwise = y : ys
+
+f :: (Eq a, Ord a, Show a) =&gt; [a] -&gt; String
+f = show . nubSorted . sort</code></pre>
+<p>Мы помещаем функцию <code>(==)</code> в <em>класс</em> <code>Eq</code> и неявно её передаем в функции <code>f</code>, <code>nubSorted</code> указывая <code>Eq a</code> в <em>контексте</em>.</p>
+<h3 id="step-6-exercise-implement-issublistof-again">Step 6 (Exercise: implement <code>isSublistOf</code> again)</h3>
+<p>Реализовать <code>isSublistOf :: (Eq a) =&gt; [a] -&gt; [a] -&gt; Bool</code> в терминах <code>isElemOf</code>.</p>
+<h3 id="step-7-typeclass-instances">Step 7 (Typeclass instances)</h3>
+<p>Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию. Вспомним, что мы начинали с проблемы, что равенство необходимо определять для каждого типа по-своему. Что и сделаем, синтаксически это выглядит так:</p>
+<pre><code>instance Eq Int where
+   (I# i1) == (I# i2) = i1 ==# i2
+
+instance (Eq a) =&gt; Eq [a] where
+   [] == [] = True
+   (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
+   _ == _ = False</code></pre>
+<p>Мы определяем эти <em>инстансы</em> на верхнем уровне и требуем, чтобы для каждого типа было не больше одного инстанса. Здесь <code>(==#)</code> — встроенный оператор равенства для типа <code>Int#</code> и во втором клозе <code>(==)</code> для списков в <code>x == y</code> используется равенство из <code>Eq a</code>, а в <code>xs == ys</code> используется равенство из <code>Eq [a]</code> (рекурсивный вызов).</p>
+<h3 id="step-8-exercise-implement-eq-instance-for-binary-trees">Step 8 (Exercise: Implement Eq instance for binary trees)</h3>
+<p>Реализовать инстанс <code>Eq</code> для дерева:</p>
+<pre><code>data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)</code></pre>
+<h3 id="step-9-more-on-typeclasses">Step 9 (More on typeclasses)</h3>
+<p>Но нужно ли ограничиваться одной функцией для класса типов? Нет:</p>
 <pre><code>class Eq a where
    (==) :: a -&gt; a -&gt; Bool
    (/=) :: a -&gt; a -&gt; Bool
-   x /= y = not (x == y)</code></pre>
+   x /= y = not (x == y)
+
+class (Eq a) =&gt; Ord a where
+   compare :: a -&gt; a -&gt; Ordering
+   compare x y
+    | x == y = EQ
+    | x &lt;= y = LT
+    | otherwise = GT
+
+   (&lt;), (&lt;=), (&gt;), (&gt;=) :: a -&gt; a -&gt; Bool
+   x &lt; y =
+      case compare x y of
+         LT -&gt; True
+         _ -&gt; False
+   x &lt;= y =
+      case compare x y of
+         GT -&gt; False
+         _ -&gt; True
+   x &gt; y =
+      case compare x y of
+         GT -&gt; True
+         _ -&gt; False
+   x &gt;= y =
+      case compare x y of
+         LT -&gt; False
+         _ -&gt; True
+
+   max, min :: a -&gt; a -&gt; a
+   max x y = if x &lt;= y then y else x
+   min x y = if x &lt;= y then x else y
+
+instance Eq Int where
+   (I# i1) == (I# i2) = i1 ==# i2
+   (I# i1) /= (I# i2) = i1 /=# i2
+
+instance Eq a =&gt; Eq [a] where
+   [] == [] = True
+   (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
+   _ == _ = False
+
+instance (Ord a) =&gt; Ord [a] where
+   compare [] [] = EQ
+   compare [] (_ : _) = LT
+   compare (_ : _) [] = GT
+   compare (x : xs) (y : ys) =
+      case compare x y of
+         EQ -&gt; compare xs ys
+         other -&gt; other
+
+instance Ord Int where
+   (I# x#) `compare` (I# y#)
+    | isTrue# (x# &lt;# y#) = LT
+    | isTrue# (x# ==# y#) = EQ
+    | otherwise = GT
+   (I# x) &lt; (I# y) = isTrue# (x &lt;# y)
+   (I# x) &lt;= (I# y) = isTrue# (x &lt;=# y)
+   (I# x) &gt;= (I# y) = isTrue# (x &gt;=# y)
+   (I# x) &gt; (I# y) = isTrue# (x &gt;# y)</code></pre>
+<p>Здесь в <code>Eq</code> определены 2 функции <code>(==)</code>, <code>(/=)</code> и у <code>(/=)</code> есть реализация по умолчанию. В инстансе для списка используется именно она, а в инстансе для <code>Int</code> она переопределена в интересах эффективности.</p>
+<p><code>Ord</code> интереснее: во-первых, определяя инстанс для <code>Ord</code>, необходимо так же определять инстанс <code>Eq</code> (присутствие контекста <code>(Eq a) =&gt;</code> при определении <code>Ord</code>). Во-вторых, каждая функция имеет реализацию по-умолчанию. При этом, <code>compare</code> определен через <code>(&lt;=)</code> и <code>(&lt;=)</code> определен через <code>compare</code>. Поэтому, чтобы программа не ушла в бесконечный цикл, нужно определить хотя бы один из них. Обычно определяют <code>compare</code> в интересах эффективности.</p>
+<h3 id="step-10-exercise-more-complex-typeclasses-somehow">Step 10 (Exercise: More complex typeclasses somehow)</h3>
+<h3 id="step-11-philosophical-concepts-and-whatnot">Step 11 (Philosophical concepts and whatnot)</h3>
+<!--
+То есть необходимо определить `(==)` так, чтобы его можно было применять к элементам разных
+типов, но чтобы конкретная реализация могла зависеть от этого типа. Такой вид полиморфизма
+называется **"ad hoc полифорфизм"**.
+-->
+<p>В Haskell ad hoc полиморфизм добавляется с помощью классов типов.</p>
 <p>Этот код задает класс типов <code>Eq</code>. Если рассматривать типы как множества, то классы типов можно понимать в математическом смысле: совокупность множеств, объединенная некоторым признаком. В случае <code>Eq</code> мы определяем совокупность множеств, таких что для каждого множества <code>a</code> определена операция <code>(==) :: a -&gt; a -&gt; Bool</code> и операция <code>(/=) :: a -&gt; a -&gt; Bool</code>. При этом <code>(/=)</code> имеет реализацию по умолчанию.</p>
 <p>Чтобы сказать, что тип принадлежит какому-то классу, необходимо написать инстанс. Для <code>Int</code> в стандартной библиотеке это делается так:</p>
 <pre><code>instance Eq Int where
@@ -64,13 +187,6 @@ map f (x : xs) = f x : map f xs</code></pre>
 <p><code>Eq a =&gt; Eq [a]</code> следует читать как “при условии, что <code>a</code> принадлежит классу <code>Eq</code>, <code>[a]</code> принадлежит классу <code>Eq</code>”. Обратим внимание на реализацию второго кейса:</p>
 <pre><code>x == y &amp;&amp; xs == ys</code></pre>
 <p>Первый <code>(==)</code> пришел из <code>Eq a</code>, а второй — рекурсивный вызов в <code>Eq [a]</code>.</p>
-<h3 id="step-4-exercise-on-implementing-eq-instance">Step 4 (Exercise on implementing Eq instance)</h3>
-<pre><code>data Tree a
-   = Leaf a
-   | Branch (Tree a) a (Tree a)
-
-...</code></pre>
-<h3 id="step-5-similarities-with-java-interfaces">Step 5 (Similarities with Java interfaces)</h3>
 <p>Если смотреть на классы типов со стороны ООП, то они напоминают интерфейсы в Java. Но есть отличие: в Java конкретная реализация выбирается по неявному аргументу <code>this</code>, а в Haskell участвует вся сигнатура функции:</p>
 <pre><code>class C a where
    m1 :: a -&gt; Integer
@@ -95,30 +211,6 @@ f2 = m2 0
 
 f3 :: Integer
 f3 = m3 [a1, a2, a3]</code></pre>
-<h3 id="step-6-exercise-on-implementing-your-own-typeclass">Step 6 (Exercise on implementing your own typeclass)</h3>
-<p>Implement a type class <code>FromList</code> that has a method <code>fromList</code>. And instances for List and Tree</p>
-<pre><code>data Tree a
-   = Leaf a
-   | Branch (Tree a) a (Tree a)
-
-...</code></pre>
-<h3 id="step-7-contexts">Step 7 (Contexts)</h3>
-<p>Посмотрим теперь на тип равенства:</p>
-<pre><code>(==) :: (Eq a) =&gt; a -&gt; a -&gt; Bool</code></pre>
-<p>То, что стоит слева от <code>=&gt;</code> называется контекстом. Такой тип следует читать как “<code>a -&gt; a -&gt; a</code> при условии, что <code>a</code> принадлежит классу <code>Eq</code>”.</p>
-<p>Попробуем теперь написать функцию сортировки для списков:</p>
-<pre><code>sort :: (Ord a) =&gt; [a] -&gt; [a]
-sort [] = []
-sort (x : xs) = sort ls ++ [x] ++ sort rs
- where (ls, rs) = partition (&lt;x) xs</code></pre>
-<p><code>Ord</code> — класс типов, задающий сравнимые типы. В числе прочих методов, в нем определен оператор <code>(&lt;) :: (Ord a) =&gt; a -&gt; a -&gt; Bool</code>. <code>(Ord a) =&gt;</code> в типе <code>sort</code> требуется ровно для того, чтобы использовать <code>(&lt;)</code>.</p>
-<h3 id="step-8-exercise-on-using-typeclasses">Step 8 (Exercise on using typeclasses)</h3>
-<p>Implement insert into a binary search tree:</p>
-<pre><code>data Tree a
-   = Leaf a
-   | Branch (Tree a) a (Tree a)
-
-...</code></pre>
 <h2 id="стандартные-классы-типов">Стандартные классы типов</h2>
 <h3 id="step-1-eq-no-built-in-equalities">Step 1 (Eq — “No built-in equalities”)</h3>
 <h3 id="step-2-show-yet-another-derivable-instance">Step 2 (Show — “Yet another derivable instance”)</h3>
