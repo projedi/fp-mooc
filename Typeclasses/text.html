@@ -86,6 +86,10 @@ nubSorted (x : xs) = x : nubSorted (go xs)
 f :: (Eq a, Ord a, Show a) =&gt; [a] -&gt; String
 f = show . nubSorted . sort</code></pre>
 <p>Мы помещаем функцию <code class="haskell">(==)</code> в <em>класс</em> <code class="haskell">Eq</code> и неявно её передаем в функции <code class="haskell">f</code>, <code class="haskell">nubSorted</code> указывая <code class="haskell">Eq a</code> в <em>контексте</em>.</p>
+<p><code class="haskell">isElemOf</code> теперь принимает вид:</p>
+<pre><code class="haskell">isElemOf :: (Eq a) =&gt; a -&gt; [a] -&gt; Bool
+isElemOf _ [] = False
+isElemOf x (y : ys) = (x == y) || isElemOf x ys</code></pre>
 <h3 id="step-6-exercise-implement-issublistof-again">Step 6 (Exercise: implement <code class="haskell">isSublistOf</code> again)</h3>
 <p>Реализовать <code class="haskell">isSublistOf :: (Eq a) =&gt; [a] -&gt; [a] -&gt; Bool</code> в терминах <code class="haskell">isElemOf</code>.</p>
 <h3 id="step-7-typeclass-instances">Step 7 (Typeclass instances)</h3>
@@ -97,7 +101,7 @@ instance (Eq a) =&gt; Eq [a] where
    [] == [] = True
    (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
    _ == _ = False</code></pre>
-<p>Мы определяем эти <em>инстансы</em> на верхнем уровне и требуем, чтобы для каждого типа было не больше одного инстанса. Здесь <code class="haskell">(==#)</code> — встроенный оператор равенства для типа <code class="haskell">Int#</code> и во втором клозе <code class="haskell">(==)</code> для списков в <code class="haskell">x == y</code> используется равенство из <code class="haskell">Eq a</code>, а в <code class="haskell">xs == ys</code> используется равенство из <code class="haskell">Eq [a]</code> (рекурсивный вызов).</p>
+<p>Мы определяем эти <em>инстансы</em> на верхнем уровне и требуем, чтобы для каждого типа было не больше одного инстанса. Здесь <code class="haskell">(==#)</code> — встроенный оператор равенства для типа <code class="haskell">Int#</code>. Во втором клозе <code class="haskell">(==)</code> для списков в <code class="haskell">x == y</code> используется равенство из <code class="haskell">Eq a</code>, а в <code class="haskell">xs == ys</code> используется равенство из <code class="haskell">Eq [a]</code> (рекурсивный вызов).</p>
 <h3 id="step-8-exercise-implement-eq-instance-for-binary-trees">Step 8 (Exercise: Implement Eq instance for binary trees)</h3>
 <p>Реализовать инстанс <code class="haskell">Eq</code> для дерева:</p>
 <pre><code class="haskell">data Tree a
@@ -170,26 +174,11 @@ instance Ord Int where
 <p><code class="haskell">Ord</code> интереснее: во-первых, определяя инстанс для <code class="haskell">Ord</code>, необходимо так же определять инстанс <code class="haskell">Eq</code> (присутствие контекста <code class="haskell">(Eq a) =&gt;</code> при определении <code class="haskell">Ord</code>). Во-вторых, каждая функция имеет реализацию по-умолчанию. При этом, <code class="haskell">compare</code> определен через <code class="haskell">(&lt;=)</code> и <code class="haskell">(&lt;=)</code> определен через <code class="haskell">compare</code>. Поэтому, чтобы программа не ушла в бесконечный цикл, нужно определить хотя бы один из них. Обычно определяют <code class="haskell">compare</code> в интересах эффективности.</p>
 <h3 id="step-10-exercise-more-complex-typeclasses-somehow">Step 10 (Exercise: More complex typeclasses somehow)</h3>
 <h3 id="step-11-philosophical-concepts-and-whatnot">Step 11 (Philosophical concepts and whatnot)</h3>
-<!--
-То есть необходимо определить `(==)` так, чтобы его можно было применять к элементам разных
-типов, но чтобы конкретная реализация могла зависеть от этого типа. Такой вид полиморфизма
-называется **"ad hoc полифорфизм"**.
--->
-<p>В Haskell ad hoc полиморфизм добавляется с помощью классов типов.</p>
-<p>Этот код задает класс типов <code class="haskell">Eq</code>. Если рассматривать типы как множества, то классы типов можно понимать в математическом смысле: совокупность множеств, объединенная некоторым признаком. В случае <code class="haskell">Eq</code> мы определяем совокупность множеств, таких что для каждого множества <code class="haskell">a</code> определена операция <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code> и операция <code class="haskell">(/=) :: a -&gt; a -&gt; Bool</code>. При этом <code class="haskell">(/=)</code> имеет реализацию по умолчанию.</p>
-<p>Чтобы сказать, что тип принадлежит какому-то классу, необходимо написать инстанс. Для <code class="haskell">Int</code> в стандартной библиотеке это делается так:</p>
-<pre><code class="haskell">instance Eq Int where
-   (I# i1) == (I# i2) = i1 ==# i2
-   (I# i1) /= (I# i2) = i1 /=# i2</code></pre>
-<p><code class="haskell">(==#)</code>, <code class="haskell">(/=#)</code> — встроенные операторы проверки на равенство для примитивного типа <code class="haskell">Int#</code>. В интересах эффективности для <code class="haskell">(/=)</code> используется специальная реализация.</p>
-<p>Теперь для списков:</p>
-<pre><code class="haskell">instance Eq a =&gt; Eq [a] where
-   [] == [] = True
-   (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
-   _ == _ = False</code></pre>
-<p><code class="haskell">Eq a =&gt; Eq [a]</code> следует читать как “при условии, что <code class="haskell">a</code> принадлежит классу <code class="haskell">Eq</code>, <code class="haskell">[a]</code> принадлежит классу <code class="haskell">Eq</code>”. Обратим внимание на реализацию второго кейса:</p>
-<pre><code class="haskell">x == y &amp;&amp; xs == ys</code></pre>
-<p>Первый <code class="haskell">(==)</code> пришел из <code class="haskell">Eq a</code>, а второй — рекурсивный вызов в <code class="haskell">Eq [a]</code>.</p>
+<h4 id="математическая-интерпретация-классов">Математическая интерпретация классов</h4>
+<p>Если рассматривать типы как множества, то классы типов можно понимать в математическом смысле: совокупность множеств, объединенная некоторым признаком.</p>
+<p>В случае <code class="haskell">Eq</code> мы определяем совокупность множеств, таких что для каждого множества <code class="haskell">a</code> определена операция <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code> и операция <code class="haskell">(/=) :: a -&gt; a -&gt; Bool</code>.</p>
+<p>В случае <code class="haskell">Ord</code> мы определяем класс множеств, с операциями <code class="haskell">compare</code>, <code class="haskell">(&lt;)</code>, … и при условии, что множества из этого класса так же принадлежит классу <code class="haskell">Eq</code>. Инстансы тогда интерпретируются как свидетели принадлежности множества классу.</p>
+<h4 id="сходства-с-java-интерфейсами">Сходства с Java интерфейсами</h4>
 <p>Если смотреть на классы типов со стороны ООП, то они напоминают интерфейсы в Java. Но есть отличие: в Java конкретная реализация выбирается по неявному аргументу <code class="haskell">this</code>, а в Haskell участвует вся сигнатура функции:</p>
 <pre><code class="haskell">class C a where
    m1 :: a -&gt; Integer
@@ -214,6 +203,8 @@ f2 = m2 0
 
 f3 :: Integer
 f3 = m3 [a1, a2, a3]</code></pre>
+<h4 id="ad-hoc-полиморфизм">Ad hoc полиморфизм</h4>
+<p>Заметим, что <code class="haskell">(==)</code> мы используем полиморфно, но реализация для каждого типа различна. Такой полиморфизм называется ad hoc.</p>
 <h2 id="стандартные-классы-типов">Стандартные классы типов</h2>
 <h3 id="step-1-eq-no-built-in-equalities">Step 1 (Eq — “No built-in equalities”)</h3>
 <h3 id="step-2-show-yet-another-derivable-instance">Step 2 (Show — “Yet another derivable instance”)</h3>
