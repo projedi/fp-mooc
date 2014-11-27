@@ -19,7 +19,7 @@ vim: ft=markdown
 <h2 id="классы-типов">Классы типов</h2>
 <h3 id="step-1-implementing-iselemof">Step 1 (Implementing <code class="haskell">isElemOf</code>)</h3>
 <p>Попробуем реализовать функцию, использующую равенство, — <code class="haskell">isElemOf</code>.</p>
-<p>Ясно, что реализация равенства зависит от типа, элементы которого сравниваем, поэтому нету функции на верхнем уровне вида <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code>. Тогда можно попробовать передавать реализацию равенства аргументом:</p>
+<p>Ясно, что реализация равенства зависит от типа, элементы которого сравниваем, поэтому нету функции на верхнем уровне вида <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code>. Можно попробовать передавать реализацию равенства аргументом:</p>
 <pre><code class="haskell">isElemOf :: (a -&gt; a -&gt; Bool) -&gt; a -&gt; [a] -&gt; Bool
 isElemOf _ _ [] = False
 isElemOf eq x (y : ys) = x `eq` y || isElemOf eq x ys</code></pre>
@@ -31,7 +31,7 @@ isElemOf eq x (y : ys) = x `eq` y || isElemOf eq x ys</code></pre>
 -- isSublistOf (==) [2, 1] [1, 2, 3] == True
 -- isSublistOf (==) [2, 4] [1, 2, 3] == False</code></pre>
 <h3 id="step-3-typeclasses">Step 3 (Typeclasses)</h3>
-<p>А что если для нашей функции мы хотим передать не только реализию равенства, а еще преобразование в строку и оператор <code class="haskell">(&lt;)</code>. Придется передавать 3 дополнительных аргумента и при этом первый и третий легко перепутать, так как они имеют одинаковый тип <code class="haskell">a -&gt; a -&gt; Bool</code>. Haskell предоставляет механизм классов типов, который позволяет автоматизировать этот процесс:</p>
+<p>А что если для нашей функции мы хотим передать не только реализацию равенства, а еще преобразование в строку и оператор <code class="haskell">(&lt;)</code>? Придется передавать 3 дополнительных аргумента и при этом первый и третий легко перепутать, так как они имеют одинаковый тип <code class="haskell">a -&gt; a -&gt; Bool</code>. Haskell предоставляет механизм классов типов, который позволяет автоматизировать процесс:</p>
 <pre><code class="haskell">class Eq a where
    (==) :: a -&gt; a -&gt; Bool
 
@@ -61,7 +61,10 @@ nubSorted (x : xs) = x : nubSorted (go xs)
 
 f :: (Eq a, Ord a, Show a) =&gt; [a] -&gt; String
 f = show . nubSorted . sort</code></pre>
-<p>Мы декларируем функцию <code class="haskell">(==)</code> в <em>классе</em> <code class="haskell">Eq</code>, а реализацию для типа <code class="haskell">a</code> неявно передаем из функции <code class="haskell">f</code> в <code class="haskell">nubSorted</code>, указывая <code class="haskell">Eq a</code> в <em>контексте</em> (все, что между <code class="haskell">::</code> и <code class="haskell">=&gt;</code>). Для <code class="haskell">(&lt;)</code> мы передаем из <code class="haskell">f</code> в <code class="haskell">sort</code>, используя <code class="haskell">Ord</code>. А <code class="haskell">show</code> мы используем в самой <code class="haskell">f</code>, беря реализацию из контекста.</p>
+<p>Мы декларируем функцию <code class="haskell">(==)</code> в <em>классе</em> <code class="haskell">Eq</code>, а реализацию для типа <code class="haskell">a</code> неявно передаем из функции <code class="haskell">f</code> в <code class="haskell">nubSorted</code>, указывая <code class="haskell">Eq a</code> в <em>контексте</em> (все, что между <code class="haskell">::</code> и <code class="haskell">=&gt;</code>). В <code class="haskell">nubSorted</code> в строчке</p>
+<pre><code class="haskell">| x == y = go ys</code></pre>
+<p>реализация <code class="haskell">==</code> берется из контекста.</p>
+<p>Аналогичная ситуация при передаче <code class="haskell">(&lt;)</code> из <code class="haskell">Ord</code> в <code class="haskell">sort</code>. А в случае <code class="haskell">show</code> из <code class="haskell">Show</code> мы никуда из <code class="haskell">f</code> дальше его не передаем.</p>
 <p><code class="haskell">isElemOf</code> теперь принимает вид:</p>
 <pre><code class="haskell">isElemOf :: (Eq a) =&gt; a -&gt; [a] -&gt; Bool
 isElemOf _ [] = False
