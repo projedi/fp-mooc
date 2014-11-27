@@ -41,6 +41,35 @@ vim: ft=markdown
     class Eq a where
        (==) :: a -> a -> Bool
 
+Здесь мы декларируем функцию `(==)` в *классе* `Eq`.  `isElemOf` теперь можно
+переписать так:
+
+    isElemOf :: (Eq a) => a -> [a] -> Bool
+    isElemOf _ [] = False
+    isElemOf x (y : ys) = x == y || x `isElemOf` ys
+
+В сигнатуре функции все, что между `::` и `=>` называется
+*контекстом*. В данном случае он состоит только из `Eq a` и
+используется в качестве неявного аргумента для передачи функции `(==)`.
+
+### Step 4 (Exercise: implement `isSublistOf` again)
+
+Реализовать в терминах `isElemOf`:
+
+    isSublistOf :: (Eq a) => [a] -> [a] -> Bool
+    -- isSublistOf [] [] == True
+    -- isSublistOf [] [1, 2, 3] == True
+    -- isSublistOf [2, 1] [1, 2, 3] == True
+    -- isSublistOf [2, 4] [1, 2, 3] == False
+
+### Step 5 (Multiple constraints in a context)
+
+Теперь посмотрим на передачу в функцию помимо равенства еще
+и преобразование в строку и оператор `(<)`:
+
+    class Eq a where
+       (==) :: a -> a -> Bool
+
     class Ord a where
        (<) :: a -> a -> Bool
 
@@ -68,34 +97,11 @@ vim: ft=markdown
     f :: (Eq a, Ord a, Show a) => [a] -> String
     f = show . nubSorted . sort
 
-Мы декларируем функцию `(==)` в _классе_ `Eq`, а реализацию для типа
-`a` неявно передаем из функции `f` в `nubSorted`, указывая `Eq a` в
-_контексте_ (все, что между `::` и `=>`). В `nubSorted` в строчке
+Здесь в `f` контекст состоит из `(Eq a, Ord a, Show a)`.
+`Eq a` неявно передается в `nubSorted`, `Ord a` --- в `sort`, `Show a` используется
+только в `f` при вызове `show`.
 
-    | x == y = go ys
-
-реализация `==` берется из контекста.
-
-Аналогичная ситуация при передаче `(<)` из `Ord` в `sort`.
-А в случае `show` из `Show` мы никуда из `f` дальше его не передаем.
-
-`isElemOf` теперь принимает вид:
-
-    isElemOf :: (Eq a) => a -> [a] -> Bool
-    isElemOf _ [] = False
-    isElemOf x (y : ys) = x == y || x `isElemOf` ys
-
-### Step 4 (Exercise: implement `isSublistOf` again)
-
-Реализовать в терминах `isElemOf`:
-
-    isSublistOf :: (Eq a) => [a] -> [a] -> Bool
-    -- isSublistOf [] [] == True
-    -- isSublistOf [] [1, 2, 3] == True
-    -- isSublistOf [2, 1] [1, 2, 3] == True
-    -- isSublistOf [2, 4] [1, 2, 3] == False
-
-### Step 5 (Typeclass instances)
+### Step 6 (Typeclass instances)
 
 Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию.
 Вспомним, что мы начинали с проблемы, что равенство необходимо определять для
@@ -114,7 +120,7 @@ _контексте_ (все, что между `::` и `=>`). В `nubSorted` в
 типа `Int#`. Во втором клозе `(==)` для списков в `x == y` используется равенство
 из `Eq a`, а в `xs == ys` используется равенство из `Eq [a]` (рекурсивный вызов).
 
-### Step 6 (Exercise: Implement Eq instance for binary trees)
+### Step 7 (Exercise: Implement Eq instance for binary trees)
 
 Реализовать инстанс `Eq` для дерева:
 
@@ -122,7 +128,7 @@ _контексте_ (все, что между `::` и `=>`). В `nubSorted` в
        = Leaf a
        | Branch (Tree a) a (Tree a)
 
-### Step 7 (More on typeclasses)
+### Step 8 (More on typeclasses)
 
 Но нужно ли ограничиваться одной функцией для класса типов? Нет:
 
@@ -198,9 +204,9 @@ _контексте_ (все, что между `::` и `=>`). В `nubSorted` в
 и `(<=)` определен через `compare`. Поэтому, чтобы программа не ушла в бесконечный цикл,
 нужно определить хотя бы один из них. Обычно определяют `compare` в интересах эффективности.
 
-### Step 8 (Exercise: More complex typeclasses somehow)
+### Step 9 (Exercise: More complex typeclasses somehow)
 
-### Step 9 (Philosophical concepts and whatnot)
+### Step 10 (Philosophical concepts and whatnot)
 
 #### Математическая интерпретация классов
 
