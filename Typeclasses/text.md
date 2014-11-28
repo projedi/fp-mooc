@@ -65,7 +65,7 @@ vim: ft=markdown
 ### Step 5 (Multiple constraints in a context)
 
 Теперь посмотрим на передачу в функцию помимо равенства еще
-и преобразование в строку и оператор `(<)`:
+преобразование в строку и оператор `(<)`:
 
     class Eq a where
        (==) :: a -> a -> Bool
@@ -97,7 +97,7 @@ vim: ft=markdown
     f :: (Eq a, Ord a, Show a) => [a] -> String
     f = show . nubSorted . sort
 
-Здесь в `f` контекст состоит из `(Eq a, Ord a, Show a)`.
+В `f` контекст состоит из `(Eq a, Ord a, Show a)`.
 `Eq a` неявно передается в `nubSorted`, `Ord a` --- в `sort`, `Show a` используется
 только в `f` при вызове `show`.
 
@@ -226,9 +226,7 @@ vim: ft=markdown
 нужно определить хотя бы один из них. Обычно определяют либо `compare`, либо все кроме
 `max`, `min`.
 
-### Step 10 (Exercise: More complex typeclasses somehow)
-
-### Step 11 (Philosophical concepts and whatnot)
+### Step 10 (Philosophical concepts and whatnot)
 
 #### Математическая интерпретация классов
 

@@ -47,7 +47,7 @@ isElemOf x (y : ys) = x == y || x `isElemOf` ys</code></pre>
 -- isSublistOf [2, 1] [1, 2, 3] == True
 -- isSublistOf [2, 4] [1, 2, 3] == False</code></pre>
 <h3 id="step-5-multiple-constraints-in-a-context">Step 5 (Multiple constraints in a context)</h3>
-<p>Теперь посмотрим на передачу в функцию помимо равенства еще и преобразование в строку и оператор <code class="haskell">(&lt;)</code>:</p>
+<p>Теперь посмотрим на передачу в функцию помимо равенства еще преобразование в строку и оператор <code class="haskell">(&lt;)</code>:</p>
 <pre><code class="haskell">class Eq a where
    (==) :: a -&gt; a -&gt; Bool
 
@@ -77,7 +77,7 @@ nubSorted (x : xs) = x : nubSorted (go xs)
 
 f :: (Eq a, Ord a, Show a) =&gt; [a] -&gt; String
 f = show . nubSorted . sort</code></pre>
-<p>Здесь в <code class="haskell">f</code> контекст состоит из <code class="haskell">(Eq a, Ord a, Show a)</code>. <code class="haskell">Eq a</code> неявно передается в <code class="haskell">nubSorted</code>, <code class="haskell">Ord a</code> — в <code class="haskell">sort</code>, <code class="haskell">Show a</code> используется только в <code class="haskell">f</code> при вызове <code class="haskell">show</code>.</p>
+<p>В <code class="haskell">f</code> контекст состоит из <code class="haskell">(Eq a, Ord a, Show a)</code>. <code class="haskell">Eq a</code> неявно передается в <code class="haskell">nubSorted</code>, <code class="haskell">Ord a</code> — в <code class="haskell">sort</code>, <code class="haskell">Show a</code> используется только в <code class="haskell">f</code> при вызове <code class="haskell">show</code>.</p>
 <h3 id="step-6-parameters-in-a-class">Step 6 (Parameters in a class)</h3>
 <pre><code class="haskell">class Eq a where
    (==) :: a -&gt; a -&gt; Bool
@@ -173,8 +173,7 @@ instance Ord Int where
    (I# x) &gt; (I# y) = isTrue# (x &gt;# y)</code></pre>
 <p>Здесь в <code class="haskell">Eq</code> определены 2 функции <code class="haskell">(==)</code>, <code class="haskell">(/=)</code> и у <code class="haskell">(/=)</code> есть реализация по умолчанию. В инстансе для списка используется именно она, а в инстансе для <code class="haskell">Int</code> она переопределена в интересах эффективности.</p>
 <p><code class="haskell">Ord</code> интереснее: во-первых, определяя инстанс для <code class="haskell">Ord</code>, необходимо так же определять инстанс <code class="haskell">Eq</code> (присутствие контекста <code class="haskell">(Eq a) =&gt;</code> при определении <code class="haskell">Ord</code>). Во-вторых, каждая функция имеет реализацию по-умолчанию. При этом, <code class="haskell">compare</code> определен через <code class="haskell">(&lt;=)</code> и <code class="haskell">(&lt;=)</code> определен через <code class="haskell">compare</code>. Поэтому, чтобы программа не ушла в бесконечный цикл, нужно определить хотя бы один из них. Обычно определяют либо <code class="haskell">compare</code>, либо все кроме <code class="haskell">max</code>, <code class="haskell">min</code>.</p>
-<h3 id="step-10-exercise-more-complex-typeclasses-somehow">Step 10 (Exercise: More complex typeclasses somehow)</h3>
-<h3 id="step-11-philosophical-concepts-and-whatnot">Step 11 (Philosophical concepts and whatnot)</h3>
+<h3 id="step-10-philosophical-concepts-and-whatnot">Step 10 (Philosophical concepts and whatnot)</h3>
 <h4 id="математическая-интерпретация-классов">Математическая интерпретация классов</h4>
 <p>Если рассматривать типы как множества, то классы типов можно понимать в математическом смысле: совокупность множеств, объединенная некоторым признаком.</p>
 <p>В случае <code class="haskell">Eq</code> мы определяем совокупность множеств, таких что для каждого множества <code class="haskell">a</code> определена операция <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code> и операция <code class="haskell">(/=) :: a -&gt; a -&gt; Bool</code>.</p>
