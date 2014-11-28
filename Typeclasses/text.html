@@ -78,7 +78,22 @@ nubSorted (x : xs) = x : nubSorted (go xs)
 f :: (Eq a, Ord a, Show a) =&gt; [a] -&gt; String
 f = show . nubSorted . sort</code></pre>
 <p>Здесь в <code class="haskell">f</code> контекст состоит из <code class="haskell">(Eq a, Ord a, Show a)</code>. <code class="haskell">Eq a</code> неявно передается в <code class="haskell">nubSorted</code>, <code class="haskell">Ord a</code> — в <code class="haskell">sort</code>, <code class="haskell">Show a</code> используется только в <code class="haskell">f</code> при вызове <code class="haskell">show</code>.</p>
-<h3 id="step-6-typeclass-instances">Step 6 (Typeclass instances)</h3>
+<h3 id="step-6-parameters-in-a-class">Step 6 (Parameters in a class)</h3>
+<pre><code class="haskell">class Eq a where
+   (==) :: a -&gt; a -&gt; Bool
+
+data T1 a = T1 a
+
+data T2 a = T2 a
+
+f :: (Eq (T1 a), Eq b, Eq (T2 a)) =&gt; T1 a -&gt; T2 a -&gt; b
+f = ...</code></pre>
+<p>У функции <code class="haskell">f</code> контекст дает три неявных аргумента с функциями:</p>
+<pre><code class="haskell">(==) :: T1 a -&gt; T1 a -&gt; Bool
+(==) :: b -&gt; b -&gt; Bool
+(==) :: T2 a -&gt; T2 a -&gt; Bool</code></pre>
+<p>В теле <code class="haskell">f</code> при встрече <code class="haskell">(==)</code> будет выбрана нужная реализация в зависимости от типа.</p>
+<h3 id="step-7-typeclass-instances">Step 7 (Typeclass instances)</h3>
 <p>Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию. Вспомним, что мы начинали с проблемы, что равенство необходимо определять для каждого типа по-своему. Что и сделаем, синтаксически это выглядит так:</p>
 <pre><code class="haskell">instance Eq Int where
    (I# i1) == (I# i2) = i1 ==# i2
@@ -88,12 +103,12 @@ instance (Eq a) =&gt; Eq [a] where
    (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
    _ == _ = False</code></pre>
 <p>Мы определяем эти <em>инстансы</em> на верхнем уровне и требуем, чтобы для каждого типа было не больше одного инстанса. Здесь <code class="haskell">(==#)</code> — встроенный оператор равенства для типа <code class="haskell">Int#</code>. Во втором клозе <code class="haskell">(==)</code> для списков в <code class="haskell">x == y</code> используется равенство из <code class="haskell">Eq a</code>, а в <code class="haskell">xs == ys</code> используется равенство из <code class="haskell">Eq [a]</code> (рекурсивный вызов).</p>
-<h3 id="step-7-exercise-implement-eq-instance-for-binary-trees">Step 7 (Exercise: Implement Eq instance for binary trees)</h3>
+<h3 id="step-8-exercise-implement-eq-instance-for-binary-trees">Step 8 (Exercise: Implement Eq instance for binary trees)</h3>
 <p>Реализовать инстанс <code class="haskell">Eq</code> для дерева:</p>
 <pre><code class="haskell">data Tree a
    = Leaf a
    | Branch (Tree a) a (Tree a)</code></pre>
-<h3 id="step-8-more-on-typeclasses">Step 8 (More on typeclasses)</h3>
+<h3 id="step-9-more-on-typeclasses">Step 9 (More on typeclasses)</h3>
 <p>Но нужно ли ограничиваться одной функцией для класса типов? Нет:</p>
 <pre><code class="haskell">class Eq a where
    (==) :: a -&gt; a -&gt; Bool
@@ -158,8 +173,8 @@ instance Ord Int where
    (I# x) &gt; (I# y) = isTrue# (x &gt;# y)</code></pre>
 <p>Здесь в <code class="haskell">Eq</code> определены 2 функции <code class="haskell">(==)</code>, <code class="haskell">(/=)</code> и у <code class="haskell">(/=)</code> есть реализация по умолчанию. В инстансе для списка используется именно она, а в инстансе для <code class="haskell">Int</code> она переопределена в интересах эффективности.</p>
 <p><code class="haskell">Ord</code> интереснее: во-первых, определяя инстанс для <code class="haskell">Ord</code>, необходимо так же определять инстанс <code class="haskell">Eq</code> (присутствие контекста <code class="haskell">(Eq a) =&gt;</code> при определении <code class="haskell">Ord</code>). Во-вторых, каждая функция имеет реализацию по-умолчанию. При этом, <code class="haskell">compare</code> определен через <code class="haskell">(&lt;=)</code> и <code class="haskell">(&lt;=)</code> определен через <code class="haskell">compare</code>. Поэтому, чтобы программа не ушла в бесконечный цикл, нужно определить хотя бы один из них. Обычно определяют <code class="haskell">compare</code> в интересах эффективности.</p>
-<h3 id="step-9-exercise-more-complex-typeclasses-somehow">Step 9 (Exercise: More complex typeclasses somehow)</h3>
-<h3 id="step-10-philosophical-concepts-and-whatnot">Step 10 (Philosophical concepts and whatnot)</h3>
+<h3 id="step-10-exercise-more-complex-typeclasses-somehow">Step 10 (Exercise: More complex typeclasses somehow)</h3>
+<h3 id="step-11-philosophical-concepts-and-whatnot">Step 11 (Philosophical concepts and whatnot)</h3>
 <h4 id="математическая-интерпретация-классов">Математическая интерпретация классов</h4>
 <p>Если рассматривать типы как множества, то классы типов можно понимать в математическом смысле: совокупность множеств, объединенная некоторым признаком.</p>
 <p>В случае <code class="haskell">Eq</code> мы определяем совокупность множеств, таких что для каждого множества <code class="haskell">a</code> определена операция <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code> и операция <code class="haskell">(/=) :: a -&gt; a -&gt; Bool</code>.</p>

@@ -101,7 +101,27 @@ vim: ft=markdown
 `Eq a` неявно передается в `nubSorted`, `Ord a` --- в `sort`, `Show a` используется
 только в `f` при вызове `show`.
 
-### Step 6 (Typeclass instances)
+### Step 6 (Parameters in a class)
+
+    class Eq a where
+       (==) :: a -> a -> Bool
+
+    data T1 a = T1 a
+
+    data T2 a = T2 a
+
+    f :: (Eq (T1 a), Eq b, Eq (T2 a)) => T1 a -> T2 a -> b
+    f = ...
+
+У функции `f` контекст дает три неявных аргумента с функциями:
+
+    (==) :: T1 a -> T1 a -> Bool
+    (==) :: b -> b -> Bool
+    (==) :: T2 a -> T2 a -> Bool
+
+В теле `f` при встрече `(==)` будет выбрана нужная реализация в зависимости от типа.
+
+### Step 7 (Typeclass instances)
 
 Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию.
 Вспомним, что мы начинали с проблемы, что равенство необходимо определять для
@@ -120,7 +140,7 @@ vim: ft=markdown
 типа `Int#`. Во втором клозе `(==)` для списков в `x == y` используется равенство
 из `Eq a`, а в `xs == ys` используется равенство из `Eq [a]` (рекурсивный вызов).
 
-### Step 7 (Exercise: Implement Eq instance for binary trees)
+### Step 8 (Exercise: Implement Eq instance for binary trees)
 
 Реализовать инстанс `Eq` для дерева:
 
@@ -128,7 +148,7 @@ vim: ft=markdown
        = Leaf a
        | Branch (Tree a) a (Tree a)
 
-### Step 8 (More on typeclasses)
+### Step 9 (More on typeclasses)
 
 Но нужно ли ограничиваться одной функцией для класса типов? Нет:
 
@@ -204,9 +224,9 @@ vim: ft=markdown
 и `(<=)` определен через `compare`. Поэтому, чтобы программа не ушла в бесконечный цикл,
 нужно определить хотя бы один из них. Обычно определяют `compare` в интересах эффективности.
 
-### Step 9 (Exercise: More complex typeclasses somehow)
+### Step 10 (Exercise: More complex typeclasses somehow)
 
-### Step 10 (Philosophical concepts and whatnot)
+### Step 11 (Philosophical concepts and whatnot)
 
 #### Математическая интерпретация классов
 
