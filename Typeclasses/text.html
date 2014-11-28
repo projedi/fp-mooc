@@ -94,7 +94,7 @@ f = ...</code></pre>
 (==) :: T2 a -&gt; T2 a -&gt; Bool</code></pre>
 <p>В теле <code class="haskell">f</code> при встрече <code class="haskell">(==)</code> будет выбрана нужная реализация в зависимости от типа.</p>
 <h3 id="step-7-typeclass-instances">Step 7 (Typeclass instances)</h3>
-<p>Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию. Вспомним, что мы начинали с проблемы, что равенство необходимо определять для каждого типа по-своему. Что и сделаем, синтаксически это выглядит так:</p>
+<p>Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию. Как уже говорилось, равенство необходимо определять для каждого типа по-своему. Что и сделаем, синтаксически это выглядит так:</p>
 <pre><code class="haskell">instance Eq Int where
    (I# i1) == (I# i2) = i1 ==# i2
 
@@ -109,7 +109,7 @@ instance (Eq a) =&gt; Eq [a] where
    = Leaf a
    | Branch (Tree a) a (Tree a)</code></pre>
 <h3 id="step-9-more-on-typeclasses">Step 9 (More on typeclasses)</h3>
-<p>Но нужно ли ограничиваться одной функцией для класса типов? Нет:</p>
+<p>Но нужно ли ограничиваться одной функцией для класса типов? Нет, вот как определены классы <code class="haskell">Eq</code> и <code class="haskell">Ord</code> на самом деле:</p>
 <pre><code class="haskell">class Eq a where
    (==) :: a -&gt; a -&gt; Bool
    (/=) :: a -&gt; a -&gt; Bool
@@ -172,7 +172,7 @@ instance Ord Int where
    (I# x) &gt;= (I# y) = isTrue# (x &gt;=# y)
    (I# x) &gt; (I# y) = isTrue# (x &gt;# y)</code></pre>
 <p>Здесь в <code class="haskell">Eq</code> определены 2 функции <code class="haskell">(==)</code>, <code class="haskell">(/=)</code> и у <code class="haskell">(/=)</code> есть реализация по умолчанию. В инстансе для списка используется именно она, а в инстансе для <code class="haskell">Int</code> она переопределена в интересах эффективности.</p>
-<p><code class="haskell">Ord</code> интереснее: во-первых, определяя инстанс для <code class="haskell">Ord</code>, необходимо так же определять инстанс <code class="haskell">Eq</code> (присутствие контекста <code class="haskell">(Eq a) =&gt;</code> при определении <code class="haskell">Ord</code>). Во-вторых, каждая функция имеет реализацию по-умолчанию. При этом, <code class="haskell">compare</code> определен через <code class="haskell">(&lt;=)</code> и <code class="haskell">(&lt;=)</code> определен через <code class="haskell">compare</code>. Поэтому, чтобы программа не ушла в бесконечный цикл, нужно определить хотя бы один из них. Обычно определяют <code class="haskell">compare</code> в интересах эффективности.</p>
+<p><code class="haskell">Ord</code> интереснее: во-первых, определяя инстанс для <code class="haskell">Ord</code>, необходимо так же определять инстанс <code class="haskell">Eq</code> (присутствие контекста <code class="haskell">(Eq a) =&gt;</code> при определении <code class="haskell">Ord</code>). Во-вторых, каждая функция имеет реализацию по-умолчанию. При этом, <code class="haskell">compare</code> определен через <code class="haskell">(&lt;=)</code> и <code class="haskell">(&lt;=)</code> определен через <code class="haskell">compare</code>. Поэтому, чтобы программа не ушла в бесконечный цикл, нужно определить хотя бы один из них. Обычно определяют либо <code class="haskell">compare</code>, либо все кроме <code class="haskell">max</code>, <code class="haskell">min</code>.</p>
 <h3 id="step-10-exercise-more-complex-typeclasses-somehow">Step 10 (Exercise: More complex typeclasses somehow)</h3>
 <h3 id="step-11-philosophical-concepts-and-whatnot">Step 11 (Philosophical concepts and whatnot)</h3>
 <h4 id="математическая-интерпретация-классов">Математическая интерпретация классов</h4>
