@@ -276,6 +276,18 @@ vim: ft=markdown
 Расширения классов типов и производные представители
 ----------------------------------------------------
 
+### Step 1 (deriving, standalone deriving)
+
+### Step 2 (Multiple parameters)
+
+### Step 3 (Functional dependencies)
+
+### Step 4 (Flexible contexts and instances)
+
+### Step 5 (Orphan instances and how to segfault with them)
+
+### Step 6 (Overlapping, undecidable and type synonym instances)
+
 Классы типов Enum и Bounded
 ---------------------------
 
@@ -290,14 +302,3 @@ vim: ft=markdown
 
 Класс типов Foldable
 --------------------
-
-TODO
-====
-
-* Deriving + standalone deriving
-* Multi-parameter + fundeps
-* Orphan instances (and how to segfault with 'em)
-* Overlapping + undecidable instances
-* Type synonym instances
-* Flexible instances & contexts
-* Implementation of typeclasses. How do they look in Core.
