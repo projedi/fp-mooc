@@ -226,7 +226,7 @@ vim: ft=markdown
 нужно определить хотя бы один из них. Обычно определяют либо `compare`, либо все кроме
 `max`, `min`.
 
-### Step 10 (Philosophical concepts and whatnot)
+### Step 10 (Philosophy)
 
 #### Математическая интерпретация классов
 
