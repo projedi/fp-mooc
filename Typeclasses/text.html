@@ -16,7 +16,7 @@
 vim: ft=markdown
 -->
 <h1 id="уроки">Уроки</h1>
-<h2 id="классы-типов">Классы типов</h2>
+<h2 id="введение-в-классы-типов">Введение в классы типов</h2>
 <h3 id="step-1-implementing-iselemof">Step 1 (Implementing <code class="haskell">isElemOf</code>)</h3>
 <p>Попробуем реализовать функцию, использующую равенство, — <code class="haskell">isElemOf</code>.</p>
 <p>Ясно, что реализация равенства зависит от типа, элементы которого сравниваем, поэтому нету функции на верхнем уровне вида <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code>. Можно попробовать передавать реализацию равенства аргументом:</p>
@@ -203,12 +203,12 @@ f2 = m2 0
 
 f3 :: Integer
 f3 = m3 [a1, a2, a3]</code></pre>
-<h2 id="стандартные-классы-типов">Стандартные классы типов</h2>
-<h3 id="step-1-eq-no-built-in-equalities">Step 1 (Eq — “No built-in equalities”)</h3>
-<h3 id="step-2-show-yet-another-derivable-instance">Step 2 (Show — “Yet another derivable instance”)</h3>
-<h3 id="step-3-ord-inheritance">Step 3 (Ord — “Inheritance”)</h3>
-<h3 id="step-4-num-polymorphic-number-literals">Step 4 (Num — “Polymorphic number literals”)</h3>
-<h2 id="advanced-typeclassing">Advanced typeclassing</h2>
+<h2 id="расширения-классов-типов-и-производные-представители">Расширения классов типов и производные представители</h2>
+<h2 id="классы-типов-enum-и-bounded">Классы типов Enum и Bounded</h2>
+<h2 id="класс-типов-show">Класс типов Show</h2>
+<h2 id="класс-типов-read">Класс типов Read</h2>
+<h2 id="класс-типов-num-и-его-наследники">Класс типов Num и его наследники</h2>
+<h2 id="класс-типов-foldable">Класс типов Foldable</h2>
 <h1 id="todo">TODO</h1>
 <ul>
 <li>Deriving + standalone deriving</li>
