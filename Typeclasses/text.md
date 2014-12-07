@@ -291,14 +291,38 @@ vim: ft=markdown
 Классы типов Enum и Bounded
 ---------------------------
 
+### Step 1 (Enum)
+
+### Step 2 (Bounded)
+
 Класс типов Show
 ----------------
+
+### Step 1 (Show)
+
+### Step 2 (More efficient Show)
 
 Класс типов Read
 ----------------
 
+### Step 1 (Read)
+
 Класс типов Num и его наследники
 --------------------------------
+
+### Step 1 (Num)
+
+### Step 2 (Real)
+
+### Step 3 (Integral)
+
+### Step 4 (Fractional)
+
+### Step 5 (Floating)
+
+### Step 6 (RealFrac)
+
+### Step 7 (RealFloat)
 
 Класс типов Foldable
 --------------------
