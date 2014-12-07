@@ -273,39 +273,25 @@ vim: ft=markdown
     f3 :: Integer
     f3 = m3 [a1, a2, a3]
 
-Расширения классов типов и производные представители
-----------------------------------------------------
-
-### Step 1 (deriving, standalone deriving)
-
-### Step 2 (Multiple parameters)
-
-### Step 3 (Functional dependencies)
-
-### Step 4 (Flexible contexts and instances)
-
-### Step 5 (Orphan instances and how to segfault with them)
-
-### Step 6 (Overlapping, undecidable and type synonym instances)
-
-Классы типов Enum и Bounded
----------------------------
-
-### Step 1 (Enum)
-
-### Step 2 (Bounded)
-
 Класс типов Show
 ----------------
 
 ### Step 1 (Show)
 
-### Step 2 (More efficient Show)
+### Step 2 (Improve efficiency via ShowS)
+
+### Step 3 (Pretty printing via pretty)
 
 Класс типов Read
 ----------------
 
 ### Step 1 (Read)
+
+### Step 2 (Parser combinators via ReadPrec)
+
+### Step 3 (Parser combinators via parsec)
+
+### Step 4 (Other parsers: attoparsec, trifecta (+ parsers))
 
 Класс типов Num и его наследники
 --------------------------------
@@ -324,5 +310,34 @@ vim: ft=markdown
 
 ### Step 7 (RealFloat)
 
-Класс типов Foldable
---------------------
+Другие стандартные классы типов
+-------------------------------
+
+### Step 1 (Enum)
+
+### Step 2 (Bounded)
+
+### Step 3 (Ix)
+
+### Step 4 (Foldable)
+
+Расширения классов типов и производные представители
+----------------------------------------------------
+
+### Step 1 (deriving, standalone deriving)
+
+### Step 2 (Type synonym instances)
+
+### Step 3 (Orphan instances)
+
+### Step 4 (Multiple parameters)
+
+### Step 5 (Functional dependencies)
+
+### Step 6 (Associated type families (putting fun into functional dependencies))
+
+### Step 7 (Flexible contexts and instances)
+
+### Step 8 (Overlapping instances)
+
+### Step 9 (Undecidable instances)
