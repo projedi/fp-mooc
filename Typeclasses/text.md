@@ -273,8 +273,8 @@ vim: ft=markdown
     f3 :: Integer
     f3 = m3 [a1, a2, a3]
 
-Класс типов Show
-----------------
+Классы типов Show и Read
+-----------------------
 
 ### Step 1 (Show)
 
@@ -282,16 +282,9 @@ vim: ft=markdown
 
 ### Step 3 (Pretty printing via pretty)
 
-Класс типов Read
-----------------
+### Step 4 (Read)
 
-### Step 1 (Read)
-
-### Step 2 (Parser combinators via ReadPrec)
-
-### Step 3 (Parser combinators via parsec)
-
-### Step 4 (Other parsers: attoparsec, trifecta (+ parsers))
+### Step 5 (ReadPrec (w/o delving into parser combinators))
 
 Класс типов Num и его наследники
 --------------------------------
@@ -316,6 +309,8 @@ vim: ft=markdown
 ### Step 1 (Enum)
 
 ### Step 2 (Bounded)
+
+### Step 2.5 (Exercise: Deriving Enum, Bounded into Cycle with safeSuc, safePred)
 
 ### Step 3 (Ix)
 
