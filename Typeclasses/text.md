@@ -207,7 +207,15 @@ vim: ft=markdown
 нужно определить хотя бы один из них. Обычно определяют либо `compare`, либо все кроме
 `max`, `min`.
 
-### Step 10 (Philosophy)
+### Step 10 (Exercise: implement `MapLike`)
+
+Определить класс `MapLike` с методами `empty`, `lookup`, `insert`, `delete`, `fromList`.
+Они должны иметь ту же семантику, что и функции с этими именами в модуле `Data.Map`.
+У `fromList` должна быть реализация по умолчанию. Определить инстансы для `Data.Map.Map` и для `ListMap`:
+
+    newtype ListMap k v = ListMap [(k, v)]
+
+### Step 11 (Philosophy)
 
 #### Математическая интерпретация классов
 
