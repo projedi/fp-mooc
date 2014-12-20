@@ -47,54 +47,33 @@ isElemOf x (y : ys) = x == y || x `isElemOf` ys</code></pre>
 -- isSublistOf [2, 1] [1, 2, 3] == True
 -- isSublistOf [2, 4] [1, 2, 3] == False</code></pre>
 <h3 id="step-5-multiple-constraints-in-a-context">Step 5 (Multiple constraints in a context)</h3>
-<p>Теперь посмотрим на передачу в функцию помимо равенства еще преобразование в строку и оператор <code class="haskell">(&lt;)</code>:</p>
-<pre><code class="haskell">class Eq a where
-   (==) :: a -&gt; a -&gt; Bool
-
-class Ord a where
+<p>Введем еще классы для оператора <code class="haskell">(&lt;)</code> и для преобразования в строку:</p>
+<pre><code class="haskell">class Ord a where
    (&lt;) :: a -&gt; a -&gt; Bool
 
 class Show a where
-   show :: a -&gt; String
+   show :: a -&gt; String</code></pre>
+<p>Теперь посмотрим на передачу <code class="haskell">(==)</code>, <code class="haskell">(&lt;)</code> и <code class="haskell">show</code> через контекст:</p>
+<pre><code class="haskell">import Data.List (nub, sort)
 
-sort :: (Ord a) =&gt; [a] -&gt; [a]
-sort [] = []
-sort (x : xs) =
-   let (ls, rs) = go xs
-   in sort ls ++ [x] ++ sort rs
- where go [] = ([], [])
-       go (y : ys) =
-          let (ls, rs) = go ys
-          in if y &lt; x then (y : ls, rs) else (ls, y : rs)
-
-nubSorted :: (Eq a) =&gt; [a] -&gt; [a]
-nubSorted [] = []
-nubSorted (x : xs) = x : nubSorted (go xs)
- where go [] = []
-       go (y : ys)
-        | x == y = go ys
-        | otherwise = y : ys
+-- sort :: (Ord a) =&gt; [a] -&gt; [a]
+-- nub :: (Eq a) =&gt; [a] -&gt; [a]
 
 f :: (Eq a, Ord a, Show a) =&gt; [a] -&gt; String
-f = show . nubSorted . sort</code></pre>
-<p>В <code class="haskell">f</code> контекст состоит из <code class="haskell">(Eq a, Ord a, Show a)</code>. <code class="haskell">Eq a</code> неявно передается в <code class="haskell">nubSorted</code>, <code class="haskell">Ord a</code> — в <code class="haskell">sort</code>, <code class="haskell">Show a</code> используется только в <code class="haskell">f</code> при вызове <code class="haskell">show</code>.</p>
+f = show . nub . sort</code></pre>
+<p>В <code class="haskell">f</code> контекст состоит из <code class="haskell">(Eq a, Ord a, Show a)</code>. <code class="haskell">Eq a</code> неявно передается в <code class="haskell">nub</code>, <code class="haskell">Ord a</code> — в <code class="haskell">sort</code>, <code class="haskell">Show a</code> используется только в <code class="haskell">f</code> при вызове <code class="haskell">show</code>.</p>
 <h3 id="step-6-parameters-in-a-class">Step 6 (Parameters in a class)</h3>
-<pre><code class="haskell">class Eq a where
-   (==) :: a -&gt; a -&gt; Bool
+<pre><code class="haskell">data T a = T a
 
-data T1 a = T1 a
-
-data T2 a = T2 a
-
-f :: (Eq (T1 a), Eq b, Eq (T2 a)) =&gt; T1 a -&gt; T2 a -&gt; b
+f :: (Eq (T a), Eq b, Eq a) =&gt; a -&gt; T a -&gt; b
 f = ...</code></pre>
 <p>У функции <code class="haskell">f</code> контекст дает три неявных аргумента с функциями:</p>
-<pre><code class="haskell">(==) :: T1 a -&gt; T1 a -&gt; Bool
+<pre><code class="haskell">(==) :: T a -&gt; T a -&gt; Bool
 (==) :: b -&gt; b -&gt; Bool
-(==) :: T2 a -&gt; T2 a -&gt; Bool</code></pre>
-<p>В теле <code class="haskell">f</code> при встрече <code class="haskell">(==)</code> будет выбрана нужная реализация в зависимости от типа.</p>
+(==) :: a -&gt; a -&gt; Bool</code></pre>
+<p>В теле <code class="haskell">f</code> при встрече <code class="haskell">(==)</code> будет выбрана нужная реализация в зависимости от типа аргументов.</p>
 <h3 id="step-7-typeclass-instances">Step 7 (Typeclass instances)</h3>
-<p>Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию. Как уже говорилось, равенство необходимо определять для каждого типа по-своему. Что и сделаем, синтаксически это выглядит так:</p>
+<p>Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию. Как уже говорилось, равенство необходимо определять для каждого типа по-своему, что и сделаем. Синтаксически это выглядит так:</p>
 <pre><code class="haskell">instance Eq Int where
    (I# i1) == (I# i2) = i1 ==# i2
 

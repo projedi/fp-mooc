@@ -64,11 +64,8 @@ vim: ft=markdown
 
 ### Step 5 (Multiple constraints in a context)
 
-Теперь посмотрим на передачу в функцию помимо равенства еще
-преобразование в строку и оператор `(<)`:
-
-    class Eq a where
-       (==) :: a -> a -> Bool
+Введем еще классы для оператора `(<)` и для преобразования
+в строку:
 
     class Ord a where
        (<) :: a -> a -> Bool
@@ -76,56 +73,40 @@ vim: ft=markdown
     class Show a where
        show :: a -> String
 
-    sort :: (Ord a) => [a] -> [a]
-    sort [] = []
-    sort (x : xs) =
-       let (ls, rs) = go xs
-       in sort ls ++ [x] ++ sort rs
-     where go [] = ([], [])
-           go (y : ys) =
-              let (ls, rs) = go ys
-              in if y < x then (y : ls, rs) else (ls, y : rs)
+Теперь посмотрим на передачу `(==)`, `(<)` и `show` через контекст:
 
-    nubSorted :: (Eq a) => [a] -> [a]
-    nubSorted [] = []
-    nubSorted (x : xs) = x : nubSorted (go xs)
-     where go [] = []
-           go (y : ys)
-            | x == y = go ys
-            | otherwise = y : ys
+    import Data.List (nub, sort)
+
+    -- sort :: (Ord a) => [a] -> [a]
+    -- nub :: (Eq a) => [a] -> [a]
 
     f :: (Eq a, Ord a, Show a) => [a] -> String
-    f = show . nubSorted . sort
+    f = show . nub . sort
 
 В `f` контекст состоит из `(Eq a, Ord a, Show a)`.
-`Eq a` неявно передается в `nubSorted`, `Ord a` --- в `sort`, `Show a` используется
+`Eq a` неявно передается в `nub`, `Ord a` --- в `sort`, `Show a` используется
 только в `f` при вызове `show`.
 
 ### Step 6 (Parameters in a class)
 
-    class Eq a where
-       (==) :: a -> a -> Bool
+    data T a = T a
 
-    data T1 a = T1 a
-
-    data T2 a = T2 a
-
-    f :: (Eq (T1 a), Eq b, Eq (T2 a)) => T1 a -> T2 a -> b
+    f :: (Eq (T a), Eq b, Eq a) => a -> T a -> b
     f = ...
 
 У функции `f` контекст дает три неявных аргумента с функциями:
 
-    (==) :: T1 a -> T1 a -> Bool
+    (==) :: T a -> T a -> Bool
     (==) :: b -> b -> Bool
-    (==) :: T2 a -> T2 a -> Bool
+    (==) :: a -> a -> Bool
 
-В теле `f` при встрече `(==)` будет выбрана нужная реализация в зависимости от типа.
+В теле `f` при встрече `(==)` будет выбрана нужная реализация в зависимости от типа аргументов.
 
 ### Step 7 (Typeclass instances)
 
 Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию.
-Как уже говорилось, равенство необходимо определять для каждого типа по-своему.
-Что и сделаем, синтаксически это выглядит так:
+Как уже говорилось, равенство необходимо определять для каждого типа по-своему,
+что и сделаем. Синтаксически это выглядит так:
 
     instance Eq Int where
        (I# i1) == (I# i2) = i1 ==# i2
