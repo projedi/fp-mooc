@@ -187,10 +187,64 @@ f3 :: Integer
 f3 = m3 [a1, a2, a3]</code></pre>
 <h2 id="классы-типов-show-и-read">Классы типов Show и Read</h2>
 <h3 id="step-1-show">Step 1 (Show)</h3>
-<h3 id="step-2-improve-efficiency-via-shows">Step 2 (Improve efficiency via ShowS)</h3>
-<h3 id="step-3-pretty-printing-via-pretty">Step 3 (Pretty printing via pretty)</h3>
-<h3 id="step-4-read">Step 4 (Read)</h3>
-<h3 id="step-5-readprec-wo-delving-into-parser-combinators">Step 5 (ReadPrec (w/o delving into parser combinators))</h3>
+<p>Для преобразования в строку в Haskell есть класс типов <code class="haskell">Show</code>:</p>
+<pre><code class="haskell">class Show a where
+   show :: a -&gt; String</code></pre>
+<p>Он в том числе используется ghci, чтобы напечатать результат. Вот пример реализации инстанса для бинарного дерева:</p>
+<pre><code class="haskell">data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+instance Show a =&gt; Show (Tree a) where
+   show (Leaf x) = show x
+   show (Branch l x r) = &quot;(&quot; ++ show l ++ &quot;) &quot; ++ show x ++ &quot; (&quot; ++ show r ++ &quot;)&quot;</code></pre>
+<h3 id="step-2-exercise-implement-show-instance-for-binary-trees-by-drawing">Step 2 (Exercise: Implement Show instance for binary trees by drawing)</h3>
+<p>Реализовать инстанс <code class="haskell">Show</code> для деревьев, который бы “рисовал” деревья:</p>
+<pre><code class="haskell">data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+-- show (Leaf 0) == &quot;0\n&quot;
+-- show (Branch (Leaf 0) 1 (Leaf 2)) == &quot; 1 \n\
+--                                      \0 2\n&quot;
+-- show (Branch (Branch (Leaf 0) 24 (Leaf 22)) 45 (Branch (Branch (Leaf 34) 37 (Leaf 8)) 100 (Leaf 1))) ==
+--    &quot;     45         \n\
+--    \ 24         100 \n\
+--    \0  22    37    1\n\
+--    \       34  8    \n\</code></pre>
+<p><em>Подсказка</em>: Напишите вспомогательную функцию, которая строит отрисованное дерево построчно (так проще склеивать два поддерева при обработке <code class="haskell">Branch</code>). А <code class="haskell">show</code> просто вызовет эту функцию и применит к результату <code class="haskell">unlines</code>.</p>
+<h3 id="step-3-shows">Step 3 (ShowS)</h3>
+<p>В <code class="haskell">Show</code> на самом деле больше методов:</p>
+<pre><code class="haskell">type ShowS = String -&gt; String
+
+class Show a where
+   showPrec :: Int -&gt; a -&gt; ShowS
+   show :: a -&gt; String
+   showList :: [a] -&gt; ShowS</code></pre>
+<p><code class="haskell">showPrec</code> первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11). <code class="haskell">showList</code> позволяет переопределить, как будет показываться список элементов (используется в <code class="haskell">Show Char</code> для обработки показывания <code class="haskell">String</code>). Достаточно реализовать <code class="haskell">showPrec</code> <em>или</em> <code class="haskell">show</code>. Использование <code class="haskell">ShowS</code> позволяет быстро конкатенировать строки:</p>
+<pre><code class="haskell">data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+instance Show a =&gt; Show (Tree a) where
+   showPrec d (Leaf x) = showPrec d x
+   showPrec d (Branch l x r) = showString &quot;(&quot; . showPrec d l . showString &quot;) &quot; . showPrec d x . showString &quot; (&quot; . showPrec d r . showString &quot;)&quot;</code></pre>
+<h3 id="step-4-exercise-implement-show-instance-for-expressions">Step 4 (Exercise: Implement Show instance for expressions)</h3>
+<p>Реализовать инстанс <code class="haskell">Show</code> для арифметических выражений:</p>
+<pre><code class="haskell">data Expr
+   = Val Int
+   | Sum Expr Expr
+   | Mul Expr Expr
+
+-- show (Sum (Mul (Val 1) (Val 2)) (Mul (Val 3) (Val 4))) == &quot;1 * 2 + 3 * 4&quot;
+-- show (Mul (Sum (Val 1) (Val 2)) (Sum (Val 3) (Val 4))) == &quot;(1 + 2) * (3 + 4)&quot;
+-- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == &quot;1 + 2 + 3&quot;
+-- show (Mul (Val 1) (Mul (Val 2) (Val 3))) == &quot;1 * 2 * 3&quot;</code></pre>
+<h3 id="step-5-pretty-printing-via-pretty">Step 5 (Pretty printing via pretty)</h3>
+<h3 id="step-6-exercise-implement-pretty-printing-of-a-programming-language">Step 6 (Exercise: Implement pretty printing of a programming language)</h3>
+<h3 id="step-6-read">Step 6 (Read)</h3>
+<h3 id="step-7-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
+<h3 id="step-8-readprec-wo-delving-into-parser-combinators">Step 8 (ReadPrec (w/o delving into parser combinators))</h3>
 <h2 id="класс-типов-num-и-его-наследники">Класс типов Num и его наследники</h2>
 <h3 id="step-1-num">Step 1 (Num)</h3>
 <h3 id="step-2-real">Step 2 (Real)</h3>

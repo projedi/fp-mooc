@@ -267,13 +267,92 @@ vim: ft=markdown
 
 ### Step 1 (Show)
 
-### Step 2 (Improve efficiency via ShowS)
+Для преобразования в строку в Haskell есть класс типов `Show`:
+```
+class Show a where
+   show :: a -> String
+```
+Он в том числе используется ghci, чтобы напечатать результат.
+Вот пример реализации инстанса для бинарного дерева:
+```
+data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
 
-### Step 3 (Pretty printing via pretty)
+instance Show a => Show (Tree a) where
+   show (Leaf x) = show x
+   show (Branch l x r) = "(" ++ show l ++ ") " ++ show x ++ " (" ++ show r ++ ")"
+```
 
-### Step 4 (Read)
+### Step 2 (Exercise: Implement Show instance for binary trees by drawing)
 
-### Step 5 (ReadPrec (w/o delving into parser combinators))
+Реализовать инстанс `Show` для деревьев, который бы "рисовал" деревья:
+```
+data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+-- show (Leaf 0) == "0\n"
+-- show (Branch (Leaf 0) 1 (Leaf 2)) == " 1 \n\
+--                                      \0 2\n"
+-- show (Branch (Branch (Leaf 0) 24 (Leaf 22)) 45 (Branch (Branch (Leaf 34) 37 (Leaf 8)) 100 (Leaf 1))) ==
+--    "     45         \n\
+--    \ 24         100 \n\
+--    \0  22    37    1\n\
+--    \       34  8    \n\
+```
+*Подсказка*: Напишите вспомогательную функцию, которая строит отрисованное дерево построчно (так проще
+склеивать два поддерева при обработке `Branch`). А `show` просто вызовет эту функцию и применит к результату `unlines`.
+
+### Step 3 (ShowS)
+
+В `Show` на самом деле больше методов:
+```
+type ShowS = String -> String
+
+class Show a where
+   showPrec :: Int -> a -> ShowS
+   show :: a -> String
+   showList :: [a] -> ShowS
+```
+`showPrec` первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11).
+`showList` позволяет переопределить, как будет показываться список элементов (используется в
+`Show Char` для обработки показывания `String`). Достаточно реализовать `showPrec` *или* `show`.
+Использование `ShowS` позволяет быстро конкатенировать строки:
+```
+data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+instance Show a => Show (Tree a) where
+   showPrec d (Leaf x) = showPrec d x
+   showPrec d (Branch l x r) = showString "(" . showPrec d l . showString ") " . showPrec d x . showString " (" . showPrec d r . showString ")"
+```
+
+### Step 4 (Exercise: Implement Show instance for expressions)
+
+Реализовать инстанс `Show` для арифметических выражений:
+```
+data Expr
+   = Val Int
+   | Sum Expr Expr
+   | Mul Expr Expr
+
+-- show (Sum (Mul (Val 1) (Val 2)) (Mul (Val 3) (Val 4))) == "1 * 2 + 3 * 4"
+-- show (Mul (Sum (Val 1) (Val 2)) (Sum (Val 3) (Val 4))) == "(1 + 2) * (3 + 4)"
+-- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == "1 + 2 + 3"
+-- show (Mul (Val 1) (Mul (Val 2) (Val 3))) == "1 * 2 * 3"
+```
+
+### Step 5 (Pretty printing via pretty)
+
+### Step 6 (Exercise: Implement pretty printing of a programming language)
+
+### Step 6 (Read)
+
+### Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)
+
+### Step 8 (ReadPrec (w/o delving into parser combinators))
 
 Класс типов Num и его наследники
 --------------------------------
