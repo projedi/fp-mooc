@@ -246,21 +246,24 @@ instance Show Nat where
 -- &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ &quot;&quot;))</code></pre>
 <p>Использование композиции для конкатенации строк исправило ситуацию.</p>
 <h3 id="step-4-show-again">Step 4 (Show again)</h3>
-<p>В <code class="haskell">Show</code> на самом деле больше методов:</p>
-<pre><code class="haskell">type ShowS = String -&gt; String
-
-class Show a where
+<p>Этот трюк на самом деле используется и в самом <code class="haskell">Show</code>. Вот как он выглядит на самом деле:</p>
+<pre><code class="haskell">class Show a where
    showPrec :: Int -&gt; a -&gt; ShowS
    show :: a -&gt; String
    showList :: [a] -&gt; ShowS</code></pre>
-<p><code class="haskell">showPrec</code> первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11). <code class="haskell">showList</code> позволяет переопределить, как будет показываться список элементов (используется в <code class="haskell">Show Char</code> для обработки показывания <code class="haskell">String</code>). Достаточно реализовать <code class="haskell">showPrec</code> <em>или</em> <code class="haskell">show</code>. Использование <code class="haskell">ShowS</code> позволяет быстро конкатенировать строки:</p>
-<pre><code class="haskell">data Tree a
-   = Leaf a
-   | Branch (Tree a) a (Tree a)
+<p>Достаточно реализовать <code class="haskell">showPrec</code> <em>или</em> <code class="haskell">show</code>. <code class="haskell">showList</code> позволяет переопределить, как будет показываться список элементов (используется в <code class="haskell">Show Char</code> для обработки показывания <code class="haskell">String</code>). <code class="haskell">showPrec</code> также первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11) — используется, например, при выводе инфиксных операторов.</p>
+<p>Также есть набор вспомогательных функций:</p>
+<pre><code class="haskell">shows :: (Show a) =&gt; a -&gt; ShowS
+shows = showPrec 0
 
-instance Show a =&gt; Show (Tree a) where
-   showPrec d (Leaf x) = showPrec d x
-   showPrec d (Branch l x r) = showString &quot;(&quot; . showPrec d l . showString &quot;) &quot; . showPrec d x . showString &quot; (&quot; . showPrec d r . showString &quot;)&quot;</code></pre>
+showChar :: Char -&gt; ShowS
+showChar = (:)
+
+showString :: String -&gt; ShowS
+showString = (++)
+
+showParen :: Bool -&gt; ShowS -&gt; ShowS
+showParen b p = if b then showChar &#39;(&#39; . p . showChar &#39;)&#39; else p</code></pre>
 <h3 id="step-5-exercise-implement-show-instance-for-expressions">Step 5 (Exercise: Implement Show instance for expressions)</h3>
 <p>Реализовать инстанс <code class="haskell">Show</code> для арифметических выражений:</p>
 <pre><code class="haskell">data Expr

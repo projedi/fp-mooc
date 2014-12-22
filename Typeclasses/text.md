@@ -345,27 +345,32 @@ instance Show Nat where
 
 ### Step 4 (Show again)
 
-В `Show` на самом деле больше методов:
+Этот трюк на самом деле используется и в самом `Show`. Вот как он выглядит на самом деле:
 ```
-type ShowS = String -> String
-
 class Show a where
    showPrec :: Int -> a -> ShowS
    show :: a -> String
    showList :: [a] -> ShowS
 ```
-`showPrec` первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11).
+Достаточно реализовать `showPrec` *или* `show`.
 `showList` позволяет переопределить, как будет показываться список элементов (используется в
-`Show Char` для обработки показывания `String`). Достаточно реализовать `showPrec` *или* `show`.
-Использование `ShowS` позволяет быстро конкатенировать строки:
-```
-data Tree a
-   = Leaf a
-   | Branch (Tree a) a (Tree a)
+`Show Char` для обработки показывания `String`).
+`showPrec` также первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11) ---
+используется, например, при выводе инфиксных операторов.
 
-instance Show a => Show (Tree a) where
-   showPrec d (Leaf x) = showPrec d x
-   showPrec d (Branch l x r) = showString "(" . showPrec d l . showString ") " . showPrec d x . showString " (" . showPrec d r . showString ")"
+Также есть набор вспомогательных функций:
+```
+shows :: (Show a) => a -> ShowS
+shows = showPrec 0
+
+showChar :: Char -> ShowS
+showChar = (:)
+
+showString :: String -> ShowS
+showString = (++)
+
+showParen :: Bool -> ShowS -> ShowS
+showParen b p = if b then showChar '(' . p . showChar ')' else p
 ```
 
 ### Step 5 (Exercise: Implement Show instance for expressions)
