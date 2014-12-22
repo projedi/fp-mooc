@@ -304,7 +304,46 @@ data Tree a
 *Подсказка*: Напишите вспомогательную функцию, которая строит отрисованное дерево построчно (так проще
 склеивать два поддерева при обработке `Branch`). А `show` просто вызовет эту функцию и применит к результату `unlines`.
 
-### Step 3 (ShowS)
+### Step 3 (Show is slow)
+
+Посмотрим теперь на производительность `show`:
+```
+data Nat = S Nat | Z
+
+instance Show Nat where
+   show Z = "0"
+   show (S n) = show n ++ "+1"
+
+-- show (S (S Z)) =>
+-- show (S Z) ++ "+1" =>
+-- (show Z ++ "+1") ++ "+1" =>
+-- ("0" ++ "+1") ++ "+1"
+```
+Мы получили последовательность скобок, при которой время работы `(++)` наихудшее.
+Попробуем исправить ситуацию:
+```
+type ShowS = String -> String
+
+showNat :: Nat -> ShowS
+showNat Z = ("0" ++)
+showNat (S n) = showNat n . ("+1" ++)
+
+instance Show Nat where
+   show n = showNat n ""
+
+-- show (S (S Z)) =>
+-- showNat (S (S Z)) "" =>
+-- (showNat (S Z) . ("+1" ++)) "" =>
+-- ((showNat Z . ("+1" ++)) . ("+1" ++)) "" =>
+-- ((("0" ++) . ("+1" ++)) . ("+1" ++)) "" =>
+-- (\x -> (("0" ++) . ("+1" ++)) ("+1" ++ x)) "" =>
+-- (\x -> (\y -> "0" ++ ("+1" ++ y)) ("+1" ++ x)) "" =>
+-- (\x -> "0" ++ ("+1" ++ ("+1" ++ x))) "" =>
+-- "0" ++ ("+1" ++ ("+1" ++ ""))
+```
+Использование композиции для конкатенации строк исправило ситуацию.
+
+### Step 4 (Show again)
 
 В `Show` на самом деле больше методов:
 ```
@@ -329,7 +368,7 @@ instance Show a => Show (Tree a) where
    showPrec d (Branch l x r) = showString "(" . showPrec d l . showString ") " . showPrec d x . showString " (" . showPrec d r . showString ")"
 ```
 
-### Step 4 (Exercise: Implement Show instance for expressions)
+### Step 5 (Exercise: Implement Show instance for expressions)
 
 Реализовать инстанс `Show` для арифметических выражений:
 ```
@@ -344,15 +383,15 @@ data Expr
 -- show (Mul (Val 1) (Mul (Val 2) (Val 3))) == "1 * 2 * 3"
 ```
 
-### Step 5 (Pretty printing via pretty)
+### Step 6 (Pretty printing via pretty)
 
-### Step 6 (Exercise: Implement pretty printing of a programming language)
+### Step 7 (Exercise: Implement pretty printing of a programming language)
 
-### Step 6 (Read)
+### Step 8 (Read)
 
-### Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)
+### Step 9 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)
 
-### Step 8 (ReadPrec (w/o delving into parser combinators))
+### Step 10 (ReadPrec (w/o delving into parser combinators))
 
 Класс типов Num и его наследники
 --------------------------------

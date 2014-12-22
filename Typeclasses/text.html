@@ -213,7 +213,39 @@ instance Show a =&gt; Show (Tree a) where
 --    \0  22    37    1\n\
 --    \       34  8    \n\</code></pre>
 <p><em>Подсказка</em>: Напишите вспомогательную функцию, которая строит отрисованное дерево построчно (так проще склеивать два поддерева при обработке <code class="haskell">Branch</code>). А <code class="haskell">show</code> просто вызовет эту функцию и применит к результату <code class="haskell">unlines</code>.</p>
-<h3 id="step-3-shows">Step 3 (ShowS)</h3>
+<h3 id="step-3-show-is-slow">Step 3 (Show is slow)</h3>
+<p>Посмотрим теперь на производительность <code class="haskell">show</code>:</p>
+<pre><code class="haskell">data Nat = S Nat | Z
+
+instance Show Nat where
+   show Z = &quot;0&quot;
+   show (S n) = show n ++ &quot;+1&quot;
+
+-- show (S (S Z)) =&gt;
+-- show (S Z) ++ &quot;+1&quot; =&gt;
+-- (show Z ++ &quot;+1&quot;) ++ &quot;+1&quot; =&gt;
+-- (&quot;0&quot; ++ &quot;+1&quot;) ++ &quot;+1&quot;</code></pre>
+<p>Мы получили последовательность скобок, при которой время работы <code class="haskell">(++)</code> наихудшее. Попробуем исправить ситуацию:</p>
+<pre><code class="haskell">type ShowS = String -&gt; String
+
+showNat :: Nat -&gt; ShowS
+showNat Z = (&quot;0&quot; ++)
+showNat (S n) = showNat n . (&quot;+1&quot; ++)
+
+instance Show Nat where
+   show n = showNat n &quot;&quot;
+
+-- show (S (S Z)) =&gt;
+-- showNat (S (S Z)) &quot;&quot; =&gt;
+-- (showNat (S Z) . (&quot;+1&quot; ++)) &quot;&quot; =&gt;
+-- ((showNat Z . (&quot;+1&quot; ++)) . (&quot;+1&quot; ++)) &quot;&quot; =&gt;
+-- (((&quot;0&quot; ++) . (&quot;+1&quot; ++)) . (&quot;+1&quot; ++)) &quot;&quot; =&gt;
+-- (\x -&gt; ((&quot;0&quot; ++) . (&quot;+1&quot; ++)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; (\y -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ y)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ x))) &quot;&quot; =&gt;
+-- &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ &quot;&quot;))</code></pre>
+<p>Использование композиции для конкатенации строк исправило ситуацию.</p>
+<h3 id="step-4-show-again">Step 4 (Show again)</h3>
 <p>В <code class="haskell">Show</code> на самом деле больше методов:</p>
 <pre><code class="haskell">type ShowS = String -&gt; String
 
@@ -229,7 +261,7 @@ class Show a where
 instance Show a =&gt; Show (Tree a) where
    showPrec d (Leaf x) = showPrec d x
    showPrec d (Branch l x r) = showString &quot;(&quot; . showPrec d l . showString &quot;) &quot; . showPrec d x . showString &quot; (&quot; . showPrec d r . showString &quot;)&quot;</code></pre>
-<h3 id="step-4-exercise-implement-show-instance-for-expressions">Step 4 (Exercise: Implement Show instance for expressions)</h3>
+<h3 id="step-5-exercise-implement-show-instance-for-expressions">Step 5 (Exercise: Implement Show instance for expressions)</h3>
 <p>Реализовать инстанс <code class="haskell">Show</code> для арифметических выражений:</p>
 <pre><code class="haskell">data Expr
    = Val Int
@@ -240,11 +272,11 @@ instance Show a =&gt; Show (Tree a) where
 -- show (Mul (Sum (Val 1) (Val 2)) (Sum (Val 3) (Val 4))) == &quot;(1 + 2) * (3 + 4)&quot;
 -- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == &quot;1 + 2 + 3&quot;
 -- show (Mul (Val 1) (Mul (Val 2) (Val 3))) == &quot;1 * 2 * 3&quot;</code></pre>
-<h3 id="step-5-pretty-printing-via-pretty">Step 5 (Pretty printing via pretty)</h3>
-<h3 id="step-6-exercise-implement-pretty-printing-of-a-programming-language">Step 6 (Exercise: Implement pretty printing of a programming language)</h3>
-<h3 id="step-6-read">Step 6 (Read)</h3>
-<h3 id="step-7-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
-<h3 id="step-8-readprec-wo-delving-into-parser-combinators">Step 8 (ReadPrec (w/o delving into parser combinators))</h3>
+<h3 id="step-6-pretty-printing-via-pretty">Step 6 (Pretty printing via pretty)</h3>
+<h3 id="step-7-exercise-implement-pretty-printing-of-a-programming-language">Step 7 (Exercise: Implement pretty printing of a programming language)</h3>
+<h3 id="step-8-read">Step 8 (Read)</h3>
+<h3 id="step-9-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 9 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
+<h3 id="step-10-readprec-wo-delving-into-parser-combinators">Step 10 (ReadPrec (w/o delving into parser combinators))</h3>
 <h2 id="класс-типов-num-и-его-наследники">Класс типов Num и его наследники</h2>
 <h3 id="step-1-num">Step 1 (Num)</h3>
 <h3 id="step-2-real">Step 2 (Real)</h3>
