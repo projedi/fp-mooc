@@ -388,15 +388,11 @@ data Expr
 -- show (Mul (Val 1) (Mul (Val 2) (Val 3))) == "1 * 2 * 3"
 ```
 
-### Step 6 (Pretty printing via pretty)
+### Step 6 (Read)
 
-### Step 7 (Exercise: Implement pretty printing of a programming language)
+### Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)
 
-### Step 8 (Read)
-
-### Step 9 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)
-
-### Step 10 (ReadPrec (w/o delving into parser combinators))
+### Step 8 (ReadPrec (w/o delving into parser combinators))
 
 Класс типов Num и его наследники
 --------------------------------
