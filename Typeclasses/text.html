@@ -246,12 +246,12 @@ instance Show Nat where
 -- &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ &quot;&quot;))</code></pre>
 <p>Использование композиции для конкатенации строк исправило ситуацию.</p>
 <h3 id="step-4-show-again">Step 4 (Show again)</h3>
-<p>Этот трюк на самом деле используется и в самом <code class="haskell">Show</code>. Вот как он выглядит на самом деле:</p>
+<p>Этот трюк на самом деле используется и в самом <code class="haskell">Show</code>. Вот как класс выглядит на самом деле:</p>
 <pre><code class="haskell">class Show a where
    showPrec :: Int -&gt; a -&gt; ShowS
    show :: a -&gt; String
    showList :: [a] -&gt; ShowS</code></pre>
-<p>Достаточно реализовать <code class="haskell">showPrec</code> <em>или</em> <code class="haskell">show</code>. <code class="haskell">showList</code> позволяет переопределить, как будет показываться список элементов (используется в <code class="haskell">Show Char</code> для обработки показывания <code class="haskell">String</code>). <code class="haskell">showPrec</code> также первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11) — используется, например, при выводе инфиксных операторов.</p>
+<p>Достаточно реализовать <code class="haskell">showPrec</code> <em>или</em> <code class="haskell">show</code>. <code class="haskell">showList</code> позволяет переопределить, как будет показываться список элементов (используется в <code class="haskell">Show Char</code> для обработки <code class="haskell">String</code>). <code class="haskell">showPrec</code> первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11) — используется, например, при выводе инфиксных операторов.</p>
 <p>Также есть набор вспомогательных функций:</p>
 <pre><code class="haskell">shows :: (Show a) =&gt; a -&gt; ShowS
 shows = showPrec 0
@@ -274,7 +274,7 @@ showParen b p = if b then showChar &#39;(&#39; . p . showChar &#39;)&#39; else p
 -- show (Sum (Mul (Val 1) (Val 2)) (Mul (Val 3) (Val 4))) == &quot;1 * 2 + 3 * 4&quot;
 -- show (Mul (Sum (Val 1) (Val 2)) (Sum (Val 3) (Val 4))) == &quot;(1 + 2) * (3 + 4)&quot;
 -- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == &quot;1 + 2 + 3&quot;
--- show (Mul (Val 1) (Mul (Val 2) (Val 3))) == &quot;1 * 2 * 3&quot;</code></pre>
+-- show (Mul (Mul (Val 1) (Val 2)) (Val 3)) == &quot;1 * 2 * 3&quot;</code></pre>
 <h3 id="step-6-read">Step 6 (Read)</h3>
 <h3 id="step-7-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
 <h3 id="step-8-readprec-wo-delving-into-parser-combinators">Step 8 (ReadPrec (w/o delving into parser combinators))</h3>
