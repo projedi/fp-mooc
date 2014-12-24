@@ -238,9 +238,9 @@ instance Show Nat where
 -- show (S (S Z)) =&gt;
 -- showNat (S (S Z)) &quot;&quot; =&gt;
 -- (showNat (S Z) . (&quot;+1&quot; ++)) &quot;&quot; =&gt;
--- ((showNat Z . (&quot;+1&quot; ++)) . (&quot;+1&quot; ++)) &quot;&quot; =&gt;
--- (((&quot;0&quot; ++) . (&quot;+1&quot; ++)) . (&quot;+1&quot; ++)) &quot;&quot; =&gt;
--- (\x -&gt; ((&quot;0&quot; ++) . (&quot;+1&quot; ++)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; showNat (S Z) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; (showNat Z . (&quot;+1&quot; ++)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; (\y -&gt; showNat Z (&quot;+1&quot; ++ y)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
 -- (\x -&gt; (\y -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ y)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
 -- (\x -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ x))) &quot;&quot; =&gt;
 -- &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ &quot;&quot;))</code></pre>
