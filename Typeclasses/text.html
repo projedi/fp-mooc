@@ -276,6 +276,35 @@ showParen b p = if b then showChar &#39;(&#39; . p . showChar &#39;)&#39; else p
 -- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == &quot;1 + 2 + 3&quot;
 -- show (Mul (Mul (Val 1) (Val 2)) (Val 3)) == &quot;1 * 2 * 3&quot;</code></pre>
 <h3 id="step-6-read">Step 6 (Read)</h3>
+<p>Помимо преобразования в строку в Haskell есть так же класс для преобразования из строки, <code class="haskell">Read</code>. Вот он, как обычно, в своей неполноте вместе со вспомогательными функциями:</p>
+<pre><code class="haskell">type ReadS a = String -&gt; [(a, String)]
+
+class Read a where
+   readsPrec :: Int -&gt; ReadS a
+   readList :: ReadS [a]
+
+reads :: Read a =&gt; ReadS a
+read :: Read a =&gt; String -&gt; a
+readParen :: Bool -&gt; ReadS a -&gt; ReadS a
+lex :: ReadS String</code></pre>
+<p>Достаточно определить <code class="haskell">readsPrec</code>.</p>
+<ul>
+<li><code class="haskell">ReadS a</code> — парсер для <code class="haskell">a</code>: принимает на вход строку и возвращает список возможных результатов <code class="haskell">(a, String)</code>, где <code class="haskell">String</code> — остаток строки, не участвовший в парсинге.</li>
+<li><code class="haskell">readsPrec</code> — так же, как и <code class="haskell">showPrec</code> принимает первым аргументом приоритет оператора в окружающем контексте.</li>
+<li><code class="haskell">readList</code> — так же, как и <code class="haskell">showList</code> используется для особой обработки парсинга списков. И используется в инстансе <code class="haskell">Read Char</code>.</li>
+<li><code class="haskell">reads</code> — эквивалентно <code class="haskell">readsPrec 0</code>.</li>
+<li><code class="haskell">read</code> — попытается <em>полностью</em> распарсить вход и упадет с ошибкой при неудаче.</li>
+<li><code class="haskell">readParen</code> — <code class="haskell">readParen True p</code> парсит <code class="haskell">p</code>, заключенное в скобки; <code class="haskell">readParen False p</code> парсит <code class="haskell">p</code>, <em>возможно</em> заключенное в скобки.</li>
+<li><code class="haskell">lex</code> — прочитать одну лексему, пропустив лидирующие пробелы. Лексема:
+<ul>
+<li><code class="haskell">'a'</code> — символьный литерал</li>
+<li><code class="haskell">&quot;abc&quot;</code> — строковый литерал</li>
+<li><code class="haskell">foo123'</code> — идентификатор в Haskell</li>
+<li><code class="haskell">&lt;&lt;</code>, <code class="haskell">:</code>, … — оператор в Haskell</li>
+<li><code class="haskell">(</code>, <code class="haskell">::</code>, … — пунктуация и зарезервированные символы в Haskell</li>
+<li><code class="haskell">12.3</code>, <code class="haskell">12e+34</code> — число</li>
+</ul></li>
+</ul>
 <h3 id="step-7-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
 <h3 id="step-8-readprec-wo-delving-into-parser-combinators">Step 8 (ReadPrec (w/o delving into parser combinators))</h3>
 <h2 id="класс-типов-num-и-его-наследники">Класс типов Num и его наследники</h2>

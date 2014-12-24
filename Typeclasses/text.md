@@ -390,6 +390,40 @@ data Expr
 
 ### Step 6 (Read)
 
+Помимо преобразования в строку в Haskell есть так же класс для преобразования из строки, `Read`.
+Вот он, как обычно, в своей неполноте вместе со вспомогательными функциями:
+```
+type ReadS a = String -> [(a, String)]
+
+class Read a where
+   readsPrec :: Int -> ReadS a
+   readList :: ReadS [a]
+
+reads :: Read a => ReadS a
+read :: Read a => String -> a
+readParen :: Bool -> ReadS a -> ReadS a
+lex :: ReadS String
+```
+Достаточно определить `readsPrec`.
+
+* `ReadS a` --- парсер для `a`: принимает на вход строку и возвращает список возможных результатов
+  `(a, String)`, где `String` --- остаток строки, не участвовший в парсинге.
+* `readsPrec` --- так же, как и `showPrec` принимает первым аргументом приоритет оператора
+  в окружающем контексте.
+* `readList` --- так же, как и `showList` используется для особой обработки парсинга списков.
+  И используется в инстансе `Read Char`.
+* `reads` --- эквивалентно `readsPrec 0`.
+* `read` --- попытается *полностью* распарсить вход и упадет с ошибкой при неудаче.
+* `readParen` --- `readParen True p` парсит `p`, заключенное в скобки;
+  `readParen False p` парсит `p`, *возможно* заключенное в скобки.
+* `lex` --- прочитать одну лексему, пропустив лидирующие пробелы. Лексема:
+    - `'a'` --- символьный литерал
+    - `"abc"` --- строковый литерал
+    - `foo123'` --- идентификатор в Haskell
+    - `<<`, `:`, ... --- оператор в Haskell
+    - `(`, `::`, ... --- пунктуация и зарезервированные символы в Haskell
+    - `12.3e-45` --- число
+
 ### Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)
 
 ### Step 8 (ReadPrec (w/o delving into parser combinators))
