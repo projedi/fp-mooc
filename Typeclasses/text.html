@@ -280,7 +280,7 @@ showParen b p = if b then showChar &#39;(&#39; . p . showChar &#39;)&#39; else p
 -- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == &quot;1 + 2 + 3&quot;
 -- show (Mul (Mul (Val 1) (Val 2)) (Val 3)) == &quot;1 * 2 * 3&quot;</code></pre>
 <h3 id="step-6-read">Step 6 (Read)</h3>
-<p>Помимо преобразования в строку в Haskell есть так же класс для преобразования из строки, <code class="haskell">Read</code>. Вот он, как обычно, в своей неполноте вместе со вспомогательными функциями:</p>
+<p>Помимо преобразования в строку в Haskell есть так же класс для преобразования из строки, <code class="haskell">Read</code>. Вот, как обычно, его часть вместе со вспомогательными функциями:</p>
 <pre><code class="haskell">type ReadS a = String -&gt; [(a, String)]
 
 class Read a where
@@ -306,7 +306,7 @@ lex :: ReadS String</code></pre>
 <li><code class="haskell">foo123'</code> — идентификатор в Haskell</li>
 <li><code class="haskell">&lt;&lt;</code>, <code class="haskell">:</code>, … — оператор в Haskell</li>
 <li><code class="haskell">(</code>, <code class="haskell">::</code>, … — пунктуация и зарезервированные символы в Haskell</li>
-<li><code class="haskell">12.3</code>, <code class="haskell">12e+34</code> — число</li>
+<li><code class="haskell">12.3e-45</code> — число</li>
 </ul></li>
 </ul>
 <h3 id="step-7-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
