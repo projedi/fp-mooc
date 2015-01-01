@@ -511,8 +511,6 @@ data Expr
 -- read " 1 2 * 3 +  " == Sum (Mul (Val 1) (Val 2)) (Val 3)
 ```
 
-### Step 9 (ReadPrec (w/o delving into parser combinators))
-
 Класс типов Num и его наследники
 --------------------------------
 
