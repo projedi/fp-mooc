@@ -309,8 +309,57 @@ lex :: ReadS String</code></pre>
 <li><code class="haskell">12.3e-45</code> — число</li>
 </ul></li>
 </ul>
-<h3 id="step-7-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 7 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
-<h3 id="step-8-readprec-wo-delving-into-parser-combinators">Step 8 (ReadPrec (w/o delving into parser combinators))</h3>
+<h3 id="step-7-read-example">Step 7 (Read example)</h3>
+<p>В качестве примера, рассмотрим парсинг времени поддерживающий как “22:34”, так и “10:34PM”:</p>
+<pre><code class="haskell">data Time = Time
+   { hours :: Int
+   , minutes :: Int
+   }
+   deriving Show
+
+data DayPeriod = AM | PM | None
+
+instance Read DayPeriod where
+   readsPrec p origs = go origs
+    where go (&#39; &#39;:s) = go s
+          go (&#39;\t&#39;:s) = go s
+          go (&#39;\n&#39;:s) = go s
+          go (&#39;A&#39;:&#39;M&#39;:s) = [(AM, s)]
+          go (&#39;P&#39;:&#39;M&#39;:s) = [(PM, s)]
+          go _ = [(None, origs)]
+
+instance Read Time where
+   readsPrec p s =
+      [ (t, s&#39;&#39;&#39;)
+      | (h, (&#39;:&#39; : s&#39;)) &lt;- readsPrec p s
+      , (m, s&#39;&#39;) &lt;- readsPrec p s&#39;
+      , m &gt;= 0 &amp;&amp; m &lt; 60
+      , (dp, s&#39;&#39;&#39;) &lt;- readsPrec p s&#39;&#39;
+      , t &lt;- case dp of
+                None -&gt; [ Time h m | h &gt;= 0 &amp;&amp; h &lt; 24 ]
+                AM -&gt; [ Time (h `rem` 12) m | h &gt;= 1 &amp;&amp; h &lt;= 12 ]
+                PM -&gt; [ Time (h `rem` 12 + 12) m | h &gt;= 1 &amp;&amp; h &lt;= 12 ]
+      ]</code></pre>
+<p>Если это выглядит не очень элегантно, то все как надо. Инструменты, которые позволят писать приличный код для парсинга будут рассмотрены в последних двух модулях этого курса.</p>
+<p>Инстанс для <code class="haskell">DayPeriod</code> смотрит на входную строку, пропускает лидирующие пробельные символы и, если строка начинается с <code class="haskell">&quot;AM&quot;</code> или <code class="haskell">&quot;PM&quot;</code>, возвращает соответственно <code class="haskell">AM</code> или <code class="haskell">PM</code> вместе с остатком строки. Иначе возвращает <code class="haskell">None</code> и всю входную строку (вместе с лидирующими пробельными символами).</p>
+<p>Инстанс для <code class="haskell">Time</code> использует генераторы списков возможно неожиданным способом. Идея в том, чтобы рассматривать функции, возвращающие списки, как недетерминированные вычисления: списком на выходе мы возвращаем все возможные результаты этого вычисления (которых может быть любое количество, в том числе 0). В этом случае под</p>
+<pre><code class="haskell">[ y | x &lt;- f, y &lt;- g x, y &gt;= 0 ]</code></pre>
+<p>понимается вычисление, возвращающее все неотрицательные результаты применения результата <code class="haskell">f</code> к <code class="haskell">g</code>. Теперь парсинг <code class="haskell">Time</code> можно читать как императивную программу:</p>
+<ol style="list-style-type: decimal">
+<li>Читаем <code class="haskell">Int</code>, за которым следует <code class="haskell">:</code> и храним этот <code class="haskell">Int</code> в <code class="haskell">h</code>.</li>
+<li>Читаем <code class="haskell">Int</code> и храним его в <code class="haskell">m</code>.</li>
+<li>Требуем <code class="haskell">m &gt;= 0 &amp;&amp; m &lt; 60</code>.</li>
+<li>Читаем <code class="haskell">DayPeriod</code> и храним его в <code class="haskell">dp</code>.</li>
+<li>В зависимости от <code class="haskell">dp</code> ставим ограничения на <code class="haskell">h</code> и конструируем <code class="haskell">Time</code> из <code class="haskell">h</code> и <code class="haskell">m</code>.</li>
+</ol>
+<p>Вызов <code class="haskell">read s</code> для парсинга <code class="haskell">Time</code> тогда будет смотреть на результат <code class="haskell">readPrec 0 s</code>:</p>
+<ul>
+<li>Если есть ровно один результат, с пустой оставшейся строкой, то он вернет его.</li>
+<li>Если есть несколько таких результатов, то упадет, сказав, что парсинг недетерминированный.</li>
+<li>Если нет ни одного результата, либо все результаты имеют какую-то оставшуюся строку, то упадет, сказав, что парсинг неудачный.</li>
+</ul>
+<h3 id="step-8-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 8 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
+<h3 id="step-9-readprec-wo-delving-into-parser-combinators">Step 9 (ReadPrec (w/o delving into parser combinators))</h3>
 <h2 id="класс-типов-num-и-его-наследники">Класс типов Num и его наследники</h2>
 <h3 id="step-1-num">Step 1 (Num)</h3>
 <h3 id="step-2-real">Step 2 (Real)</h3>
