@@ -358,7 +358,16 @@ instance Read Time where
 <li>Если есть несколько таких результатов, то упадет, сказав, что парсинг недетерминированный.</li>
 <li>Если нет ни одного результата, либо все результаты имеют какую-то оставшуюся строку, то упадет, сказав, что парсинг неудачный.</li>
 </ul>
-<h3 id="step-8-exercise-implement-show-and-read-instances-for-binary-trees-via-prüfer-coding">Step 8 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)</h3>
+<h3 id="step-8-exercise-implement-show-and-read-instances-to-transform-expression-to-rpn-and-back">Step 8 (Exercise: Implement Show and Read instances to transform expression to RPN and back)</h3>
+<p>Обратная польская запись — запись выражения в постфиксной форме (оператор следует за своими аргументами). Например, “1 2 * 3 4 * +” в инфиксной форме выглядит как “1 * 2 + 3 * 4”.</p>
+<p>Реализовать инстансы <code class="haskell">Show</code> и <code class="haskell">Read</code> для преобразования выражения в обратную польскую запись и обратно:</p>
+<pre><code class="haskell">data Expr
+   = Val Int
+   | Sum Expr Expr
+   | Mul Expr Expr
+
+-- show (Sum (Mul (Val 1) (Val 2)) (Mul (Val 3) (Val 4))) == &quot;1 2 * 3 4 * +&quot;
+-- read &quot; 1 2 * 3 +  &quot; == Sum (Mul (Val 1) (Val 2)) (Val 3)</code></pre>
 <h3 id="step-9-readprec-wo-delving-into-parser-combinators">Step 9 (ReadPrec (w/o delving into parser combinators))</h3>
 <h2 id="класс-типов-num-и-его-наследники">Класс типов Num и его наследники</h2>
 <h3 id="step-1-num">Step 1 (Num)</h3>

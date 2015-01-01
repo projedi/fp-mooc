@@ -494,7 +494,22 @@ instance Read Time where
 * Если нет ни одного результата, либо все результаты имеют какую-то оставшуюся строку, то
   упадет, сказав, что парсинг неудачный.
 
-### Step 8 (Exercise: Implement Show and Read instances for binary trees via Prüfer coding)
+### Step 8 (Exercise: Implement Show and Read instances to transform expression to RPN and back)
+
+Обратная польская запись --- запись выражения в постфиксной форме (оператор следует за своими
+аргументами). Например, "1 2 * 3 4 * +" в инфиксной форме выглядит как "1 * 2 + 3 * 4".
+
+Реализовать инстансы `Show` и `Read` для преобразования выражения в обратную польскую запись
+и обратно:
+```
+data Expr
+   = Val Int
+   | Sum Expr Expr
+   | Mul Expr Expr
+
+-- show (Sum (Mul (Val 1) (Val 2)) (Mul (Val 3) (Val 4))) == "1 2 * 3 4 * +"
+-- read " 1 2 * 3 +  " == Sum (Mul (Val 1) (Val 2)) (Val 3)
+```
 
 ### Step 9 (ReadPrec (w/o delving into parser combinators))
 
