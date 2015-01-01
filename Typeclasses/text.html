@@ -244,7 +244,11 @@ instance Show Nat where
 -- (\x -&gt; (\y -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ y)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
 -- (\x -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ x))) &quot;&quot; =&gt;
 -- &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ &quot;&quot;))</code></pre>
-<p>Использование композиции для конкатенации строк исправило ситуацию.</p>
+<p>Использование композиции для конкатенации строк исправило ситуацию. Можете проверить, что если showNat выглядел бы так:</p>
+<pre><code class="haskell">showNat :: Nat -&gt; ShowS
+showNat Z = (&quot;0&quot; ++)
+showNat (S n) = (&quot;1+&quot; ++) . showNat n</code></pre>
+<p>то последовательность скобок осталась бы эффективной.</p>
 <h3 id="step-4-show-again">Step 4 (Show again)</h3>
 <p>Этот трюк на самом деле используется и в самом <code class="haskell">Show</code>. Вот как класс выглядит на самом деле:</p>
 <pre><code class="haskell">class Show a where
