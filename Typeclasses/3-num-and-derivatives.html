@@ -123,5 +123,73 @@ realToFrac = fromRational . toRational</code></pre>
 <p>Реализации по-умолчанию есть у <code class="haskell">exponent</code>, <code class="haskell">significand</code>, <code class="haskell">scaleFloat</code>, <code class="haskell">atan2</code>.</p>
 <p>Почти все функции относятся к внутреннему представлению чисел с плавающей точкой в виде <span class="math"><em>m</em> × <em>b</em><sup><em>n</em></sup></span>, где <span class="math"><em>m</em></span> — мантисса (<code class="haskell">significand</code>), <span class="math"><em>b</em></span> — основание (<code class="haskell">floatRadix</code>), а <span class="math"><em>n</em></span> — экспонента (<code class="haskell">exponent</code>).</p>
 <p>Выделяется из них всех функция <code class="haskell">atan2</code> — посчитать угол по вектора с координатами <code class="haskell">x, y</code>.</p>
+<h1 id="step-8-instance-table">Step 8 (Instance table)</h1>
+<pre><code class="haskell">data Matrix3x3 = Matrix3x3 [[Double]]</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="center"><code class="haskell">Num</code></th>
+<th align="center"><code class="haskell">Real</code></th>
+<th align="center"><code class="haskell">Integral</code></th>
+<th align="center"><code class="haskell">Fractional</code></th>
+<th align="center"><code class="haskell">Floating</code></th>
+<th align="center"><code class="haskell">RealFrac</code></th>
+<th align="center"><code class="haskell">RealFloat</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code class="haskell">Int</code></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+</tr>
+<tr class="even">
+<td align="left"><code class="haskell">Rational</code></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+</tr>
+<tr class="odd">
+<td align="left"><code class="haskell">Double</code></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr class="even">
+<td align="left"><code class="haskell">Complex Double</code></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+</tr>
+<tr class="odd">
+<td align="left"><code class="haskell">Matrix3x3</code></td>
+<td align="center">✓</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+</tr>
+</tbody>
+</table>
 </body>
 </html>

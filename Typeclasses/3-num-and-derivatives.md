@@ -169,3 +169,17 @@ class (RealFrac a, Floating a) => RealFloat a where
 а $n$ --- экспонента (`exponent`).
 
 Выделяется из них всех функция `atan2` --- посчитать угол по вектора с координатами `x, y`.
+
+# Step 8 (Instance table)
+
+```
+data Matrix3x3 = Matrix3x3 [[Double]]
+```
+
+                  `Num`   `Real`   `Integral`   `Fractional`   `Floating`   `RealFrac`   `RealFloat`
+---------------- ------- -------- ------------ -------------- ------------ ------------ -------------
+           `Int`    ✓       ✓          ✓             ✗             ✗            ✗             ✗
+      `Rational`    ✓       ✓          ✗             ✓             ✗            ✓             ✗
+        `Double`    ✓       ✓          ✗             ✓             ✓            ✓             ✓
+`Complex Double`    ✓       ✓          ✗             ✓             ✓            ✗             ✗
+     `Matrix3x3`    ✓       ✗          ✗             ✗             ✗            ✗             ✗
