@@ -1,4 +1,4 @@
-# Step 1 (Show)
+# Show
 
 Для преобразования в строку в Haskell есть класс типов `Show`:
 ```
@@ -17,7 +17,7 @@ instance Show a => Show (Tree a) where
    show (Branch l x r) = "(" ++ show l ++ ") " ++ show x ++ " (" ++ show r ++ ")"
 ```
 
-# Step 2 (Exercise: Implement Show instance for binary trees by drawing)
+# Exercise: Implement Show instance for binary trees by drawing
 
 Реализовать инстанс `Show` для деревьев, который бы "рисовал" деревья:
 ```
@@ -37,7 +37,7 @@ data Tree a
 *Подсказка*: Напишите вспомогательную функцию, которая строит отрисованное дерево построчно (так проще
 склеивать два поддерева при обработке `Branch`). А `show` просто вызовет эту функцию и применит к результату `unlines`.
 
-# Step 3 (Show is slow)
+# Show is slow
 
 Посмотрим теперь на производительность `show`:
 ```
@@ -83,7 +83,7 @@ showNat (S n) = ("1+" ++) . showNat n
 ```
 то последовательность скобок осталась бы эффективной.
 
-# Step 4 (Show again)
+# Show again
 
 Этот трюк на самом деле используется и в самом `Show`. Вот как класс выглядит на самом деле:
 ```
@@ -113,7 +113,7 @@ showParen :: Bool -> ShowS -> ShowS
 showParen b p = if b then showChar '(' . p . showChar ')' else p
 ```
 
-# Step 5 (Exercise: Implement Show instance for expressions)
+# Exercise: Implement Show instance for expressions
 
 Реализовать инстанс `Show` для арифметических выражений:
 ```
@@ -128,7 +128,7 @@ data Expr
 -- show (Mul (Mul (Val 1) (Val 2)) (Val 3)) == "1 * 2 * 3"
 ```
 
-# Step 6 (Read)
+# Read
 
 Помимо преобразования в строку в Haskell есть так же класс для преобразования из строки, `Read`.
 Вот, как обычно, его часть вместе со вспомогательными функциями:
@@ -164,7 +164,7 @@ lex :: ReadS String
     - `(`, `::`, ... --- пунктуация и зарезервированные символы в Haskell
     - `12.3e-45` --- число
 
-# Step 7 (Read example)
+# Read example
 
 В качестве примера, рассмотрим парсинг времени поддерживающий как "22:34", так и "10:34PM":
 ```
@@ -246,7 +246,7 @@ instance Read Time where
 * Если нет ни одного результата, либо все результаты имеют какую-то оставшуюся строку, то
   упадет, сказав, что парсинг неудачный.
 
-# Step 8 (Exercise: Implement Show and Read instances to transform expression to PN and back)
+# Exercise: Implement Show and Read instances to transform expression to PN and back
 
 Польская запись --- запись выражения в префиксной форме (оператор следует перед своими
 аргументами). Например, "+ * 1 2 * 3 4" в инфиксной форме выглядит как "1 * 2 + 3 * 4".

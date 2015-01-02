@@ -12,7 +12,7 @@
   <script>hljs.initHighlightingOnLoad();</script>
 </head>
 <body>
-<h1 id="step-1-num">Step 1 (Num)</h1>
+<h1 id="num"><span class="header-section-number">1</span> Num</h1>
 <p>Для работы с числами в Haskell есть целая иерархия классов типов. Самый базовый из них <code class="haskell">Num</code>:</p>
 <pre><code class="haskell">class Num a where
    (+), (-), (*) :: a -&gt; a -&gt; a
@@ -31,11 +31,11 @@
 <li><code class="haskell">fromInteger</code> — построение числа из <code class="haskell">Integer</code>.</li>
 </ul>
 <p><code class="haskell">fromInteger</code> используется при обработке численных литералов: когда мы пишем <code class="haskell">3</code>, компилятор переписывает это как применение <code class="haskell">fromInteger</code> к значению типа <code class="haskell">Integer</code>, отвечающему тройке. Именно поэтому верно <code class="haskell">3 :: Num a =&gt; a</code>.</p>
-<h1 id="step-2-real">Step 2 (Real)</h1>
+<h1 id="real"><span class="header-section-number">2</span> Real</h1>
 <p>Вспомогательный класс, служащий индикатором, что тип является числом, то есть может быть преобразован в <code class="haskell">Rational</code> (рациональная дробь с числителем и знаменателем имеющим тип <code class="haskell">Integer</code>):</p>
 <pre><code class="haskell">class (Num a, Ord a) =&gt; Real a where
    toRational :: a -&gt; Rational</code></pre>
-<h1 id="step-3-integral">Step 3 (Integral)</h1>
+<h1 id="integral"><span class="header-section-number">3</span> Integral</h1>
 <p>Для работы с целыми числами (в основном, целочисленным делением) есть класс <code class="haskell">Integral</code>:</p>
 <pre><code class="haskell">class (Real a, Enum a) =&gt; Integral a where
    quot :: a -&gt; a -&gt; a
@@ -63,7 +63,7 @@
 <p>Нужно еще отметить функцию для преобразований из произвольных целых чисел <code class="haskell">fromIntegral</code>:</p>
 <pre><code class="haskell">fromIntegral :: (Integral a, Num b) =&gt; a -&gt; b
 fromIntegral = fromInteger . toInteger</code></pre>
-<h1 id="step-4-fractional">Step 4 (Fractional)</h1>
+<h1 id="fractional"><span class="header-section-number">4</span> Fractional</h1>
 <p>Деление поддерживается классом <code class="haskell">Fractional</code>:</p>
 <pre><code class="haskell">class Num a =&gt; Fractional a where
    (/) :: a -&gt; a -&gt; a
@@ -77,7 +77,7 @@ fromIntegral = fromInteger . toInteger</code></pre>
 <p>По аналогии с <code class="haskell">fromIntegral</code> есть функция <code class="haskell">realToFrac</code> для преобразований из произвольных дробных чисел:</p>
 <pre><code class="haskell">realToFrac :: (Real a, Fractional b) =&gt; a -&gt; b
 realToFrac = fromRational . toRational</code></pre>
-<h1 id="step-5-floating">Step 5 (Floating)</h1>
+<h1 id="floating"><span class="header-section-number">5</span> Floating</h1>
 <p>Поскольку иррациональные числа невозможно в точности представить на компьютере, а заставлять хорошие (в плане корректности, а не производительности) нецелые числа вроде <code class="haskell">Rational</code> нарушать свои гарантии точности не хочется, то для тригонометрических функций, логарифмов и возведений в дробные степени был введен свой класс <code class="haskell">Floating</code>:</p>
 <pre><code class="haskell">class Fractional a =&gt; Floating a where
    pi :: a
@@ -94,7 +94,7 @@ realToFrac = fromRational . toRational</code></pre>
    tan x = sin x / cos x
    tanh x = sinh x / cosh x</code></pre>
 <p>Он опять же не наследуется от <code class="haskell">Real</code>, потому что эти операции имеют смысл для комплексных чисел.</p>
-<h1 id="step-6-realfrac">Step 6 (RealFrac)</h1>
+<h1 id="realfrac"><span class="header-section-number">6</span> RealFrac</h1>
 <p>Теперь функции округления вещественных чисел:</p>
 <pre><code class="haskell">class (Real a, Fractional a) =&gt; RealFrac a where
    properFraction :: (Integral b) =&gt; a -&gt; (b, a)
@@ -104,7 +104,7 @@ realToFrac = fromRational . toRational</code></pre>
    floor :: (Integral b) =&gt; a -&gt; b</code></pre>
 <p>Реализации по-умолчанию есть у <code class="haskell">truncate</code>, <code class="haskell">round</code>, <code class="haskell">ceiling</code>, <code class="haskell">floor</code>.</p>
 <p><code class="haskell">properFraction</code> — поделить число на целую часть и правильную дробь (числитель строго меньше знаменателя).</p>
-<h1 id="step-7-realfloat">Step 7 (RealFloat)</h1>
+<h1 id="realfloat"><span class="header-section-number">7</span> RealFloat</h1>
 <pre><code class="haskell">class (RealFrac a, Floating a) =&gt; RealFloat a where
    floatRadix :: a -&gt; Integer
    floatDigits :: a -&gt; Int
@@ -123,7 +123,7 @@ realToFrac = fromRational . toRational</code></pre>
 <p>Реализации по-умолчанию есть у <code class="haskell">exponent</code>, <code class="haskell">significand</code>, <code class="haskell">scaleFloat</code>, <code class="haskell">atan2</code>.</p>
 <p>Почти все функции относятся к внутреннему представлению чисел с плавающей точкой в виде <span class="math"><em>m</em> × <em>b</em><sup><em>n</em></sup></span>, где <span class="math"><em>m</em></span> — мантисса (<code class="haskell">significand</code>), <span class="math"><em>b</em></span> — основание (<code class="haskell">floatRadix</code>), а <span class="math"><em>n</em></span> — экспонента (<code class="haskell">exponent</code>).</p>
 <p>Выделяется из них всех функция <code class="haskell">atan2</code> — посчитать угол по вектора с координатами <code class="haskell">x, y</code>.</p>
-<h1 id="step-8-instance-table">Step 8 (Instance table)</h1>
+<h1 id="instance-table"><span class="header-section-number">8</span> Instance table</h1>
 <pre><code class="haskell">data Matrix3x3 = Matrix3x3 [[Double]]</code></pre>
 <table>
 <thead>

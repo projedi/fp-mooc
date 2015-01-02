@@ -1,11 +1,11 @@
-# Step 1 (Enum)
+# Enum
 
-# Step 2 (Bounded)
+# Bounded
 
-# Step 2.5 (Exercise: Deriving Enum, Bounded into Cycle with safeSuc, safePred)
+# Exercise: Deriving Enum, Bounded into Cycle with safeSuc, safePred
 
-# Step 3 (Ix)
+# Ix
 
-# Step 4 (Foldable)
+# Foldable
 
-# Step 5 (IsString)
+# IsString

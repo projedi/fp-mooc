@@ -12,7 +12,7 @@
   <script>hljs.initHighlightingOnLoad();</script>
 </head>
 <body>
-<h1 id="step-1-show">Step 1 (Show)</h1>
+<h1 id="show"><span class="header-section-number">1</span> Show</h1>
 <p>Для преобразования в строку в Haskell есть класс типов <code class="haskell">Show</code>:</p>
 <pre><code class="haskell">class Show a where
    show :: a -&gt; String</code></pre>
@@ -24,7 +24,7 @@
 instance Show a =&gt; Show (Tree a) where
    show (Leaf x) = show x
    show (Branch l x r) = &quot;(&quot; ++ show l ++ &quot;) &quot; ++ show x ++ &quot; (&quot; ++ show r ++ &quot;)&quot;</code></pre>
-<h1 id="step-2-exercise-implement-show-instance-for-binary-trees-by-drawing">Step 2 (Exercise: Implement Show instance for binary trees by drawing)</h1>
+<h1 id="exercise-implement-show-instance-for-binary-trees-by-drawing"><span class="header-section-number">2</span> Exercise: Implement Show instance for binary trees by drawing</h1>
 <p>Реализовать инстанс <code class="haskell">Show</code> для деревьев, который бы “рисовал” деревья:</p>
 <pre><code class="haskell">data Tree a
    = Leaf a
@@ -39,7 +39,7 @@ instance Show a =&gt; Show (Tree a) where
 --    \0  22    37    1\n\
 --    \       34  8    \n\</code></pre>
 <p><em>Подсказка</em>: Напишите вспомогательную функцию, которая строит отрисованное дерево построчно (так проще склеивать два поддерева при обработке <code class="haskell">Branch</code>). А <code class="haskell">show</code> просто вызовет эту функцию и применит к результату <code class="haskell">unlines</code>.</p>
-<h1 id="step-3-show-is-slow">Step 3 (Show is slow)</h1>
+<h1 id="show-is-slow"><span class="header-section-number">3</span> Show is slow</h1>
 <p>Посмотрим теперь на производительность <code class="haskell">show</code>:</p>
 <pre><code class="haskell">data Nat = S Nat | Z
 
@@ -75,7 +75,7 @@ instance Show Nat where
 showNat Z = (&quot;0&quot; ++)
 showNat (S n) = (&quot;1+&quot; ++) . showNat n</code></pre>
 <p>то последовательность скобок осталась бы эффективной.</p>
-<h1 id="step-4-show-again">Step 4 (Show again)</h1>
+<h1 id="show-again"><span class="header-section-number">4</span> Show again</h1>
 <p>Этот трюк на самом деле используется и в самом <code class="haskell">Show</code>. Вот как класс выглядит на самом деле:</p>
 <pre><code class="haskell">class Show a where
    showPrec :: Int -&gt; a -&gt; ShowS
@@ -94,7 +94,7 @@ showString = (++)
 
 showParen :: Bool -&gt; ShowS -&gt; ShowS
 showParen b p = if b then showChar &#39;(&#39; . p . showChar &#39;)&#39; else p</code></pre>
-<h1 id="step-5-exercise-implement-show-instance-for-expressions">Step 5 (Exercise: Implement Show instance for expressions)</h1>
+<h1 id="exercise-implement-show-instance-for-expressions"><span class="header-section-number">5</span> Exercise: Implement Show instance for expressions</h1>
 <p>Реализовать инстанс <code class="haskell">Show</code> для арифметических выражений:</p>
 <pre><code class="haskell">data Expr
    = Val Int
@@ -105,7 +105,7 @@ showParen b p = if b then showChar &#39;(&#39; . p . showChar &#39;)&#39; else p
 -- show (Mul (Sum (Val 1) (Val 2)) (Sum (Val 3) (Val 4))) == &quot;(1 + 2) * (3 + 4)&quot;
 -- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == &quot;1 + 2 + 3&quot;
 -- show (Mul (Mul (Val 1) (Val 2)) (Val 3)) == &quot;1 * 2 * 3&quot;</code></pre>
-<h1 id="step-6-read">Step 6 (Read)</h1>
+<h1 id="read"><span class="header-section-number">6</span> Read</h1>
 <p>Помимо преобразования в строку в Haskell есть так же класс для преобразования из строки, <code class="haskell">Read</code>. Вот, как обычно, его часть вместе со вспомогательными функциями:</p>
 <pre><code class="haskell">type ReadS a = String -&gt; [(a, String)]
 
@@ -135,7 +135,7 @@ lex :: ReadS String</code></pre>
 <li><code class="haskell">12.3e-45</code> — число</li>
 </ul></li>
 </ul>
-<h1 id="step-7-read-example">Step 7 (Read example)</h1>
+<h1 id="read-example"><span class="header-section-number">7</span> Read example</h1>
 <p>В качестве примера, рассмотрим парсинг времени поддерживающий как “22:34”, так и “10:34PM”:</p>
 <pre><code class="haskell">data Time = Time
    { hours :: Int
@@ -206,7 +206,7 @@ instance Read Time where
 <li>Если есть несколько таких результатов, то упадет, сказав, что парсинг недетерминированный.</li>
 <li>Если нет ни одного результата, либо все результаты имеют какую-то оставшуюся строку, то упадет, сказав, что парсинг неудачный.</li>
 </ul>
-<h1 id="step-8-exercise-implement-show-and-read-instances-to-transform-expression-to-pn-and-back">Step 8 (Exercise: Implement Show and Read instances to transform expression to PN and back)</h1>
+<h1 id="exercise-implement-show-and-read-instances-to-transform-expression-to-pn-and-back"><span class="header-section-number">8</span> Exercise: Implement Show and Read instances to transform expression to PN and back</h1>
 <p>Польская запись — запись выражения в префиксной форме (оператор следует перед своими аргументами). Например, “+ * 1 2 * 3 4” в инфиксной форме выглядит как “1 * 2 + 3 * 4”.</p>
 <p>Реализовать инстансы <code class="haskell">Show</code> и <code class="haskell">Read</code> для преобразования выражения в польскую запись и обратно:</p>
 <pre><code class="haskell">data Expr

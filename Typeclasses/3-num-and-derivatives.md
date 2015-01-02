@@ -1,4 +1,4 @@
-# Step 1 (Num)
+# Num
 
 Для работы с числами в Haskell есть целая иерархия классов типов. Самый базовый из них `Num`:
 ```
@@ -23,7 +23,7 @@ class Num a where
 компилятор переписывает это как применение `fromInteger` к значению типа `Integer`,
 отвечающему тройке. Именно поэтому верно `3 :: Num a => a`.
 
-# Step 2 (Real)
+# Real
 
 Вспомогательный класс, служащий индикатором, что тип является числом, то есть
 может быть преобразован в `Rational` (рациональная дробь с числителем и знаменателем
@@ -33,7 +33,7 @@ class (Num a, Ord a) => Real a where
    toRational :: a -> Rational
 ```
 
-# Step 3 (Integral)
+# Integral
 
 Для работы с целыми числами (в основном, целочисленным делением) есть класс `Integral`:
 ```
@@ -74,7 +74,7 @@ fromIntegral :: (Integral a, Num b) => a -> b
 fromIntegral = fromInteger . toInteger
 ```
 
-# Step 4 (Fractional)
+# Fractional
 
 Деление поддерживается классом `Fractional`:
 ```
@@ -102,7 +102,7 @@ realToFrac :: (Real a, Fractional b) => a -> b
 realToFrac = fromRational . toRational
 ```
 
-# Step 5 (Floating)
+# Floating
 
 Поскольку иррациональные числа невозможно в точности представить на компьютере, а заставлять
 хорошие (в плане корректности, а не производительности) нецелые числа вроде `Rational` нарушать
@@ -127,7 +127,7 @@ class Fractional a => Floating a where
 
 Он опять же не наследуется от `Real`, потому что эти операции имеют смысл для комплексных чисел.
 
-# Step 6 (RealFrac)
+# RealFrac
 
 Теперь функции округления вещественных чисел:
 ```
@@ -143,7 +143,7 @@ class (Real a, Fractional a) => RealFrac a where
 `properFraction` --- поделить число на целую часть и правильную дробь (числитель строго меньше
 знаменателя).
 
-# Step 7 (RealFloat)
+# RealFloat
 
 ```
 class (RealFrac a, Floating a) => RealFloat a where
@@ -170,7 +170,7 @@ class (RealFrac a, Floating a) => RealFloat a where
 
 Выделяется из них всех функция `atan2` --- посчитать угол по вектора с координатами `x, y`.
 
-# Step 8 (Instance table)
+# Instance table
 
 ```
 data Matrix3x3 = Matrix3x3 [[Double]]

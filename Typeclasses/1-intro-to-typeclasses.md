@@ -1,4 +1,4 @@
-# Step 1 (Implementing `isElemOf`)
+# Implementing `isElemOf`
 
 Попробуем реализовать функцию, использующую равенство, --- `isElemOf`.
 
@@ -10,7 +10,7 @@
     isElemOf _ _ [] = False
     isElemOf eq x (y : ys) = x `eq` y || isElemOf eq x ys
 
-# Step 2 (Exercise: implement `isSublistOf`)
+# Exercise: implement `isSublistOf`
 
 Реализовать в терминах `isElemOf`:
 
@@ -20,7 +20,7 @@
     -- isSublistOf (==) [2, 1] [1, 2, 3] == True
     -- isSublistOf (==) [2, 4] [1, 2, 3] == False
 
-# Step 3 (Typeclasses)
+# Typeclasses
 
 А что если для нашей функции мы хотим передать не только реализацию равенства,
 а еще преобразование в строку и оператор `(<)`? Придется передавать 3 дополнительных
@@ -42,7 +42,7 @@
 *контекстом*. В данном случае он состоит только из `Eq a` и
 используется в качестве неявного аргумента для передачи функции `(==)`.
 
-# Step 4 (Exercise: implement `isSublistOf` again)
+# Exercise: implement `isSublistOf` again
 
 Реализовать в терминах `isElemOf`:
 
@@ -52,7 +52,7 @@
     -- isSublistOf [2, 1] [1, 2, 3] == True
     -- isSublistOf [2, 4] [1, 2, 3] == False
 
-# Step 5 (Multiple constraints in a context)
+# Multiple constraints in a context
 
 Введем еще классы для оператора `(<)` и для преобразования
 в строку:
@@ -77,7 +77,7 @@
 `Eq a` неявно передается в `nub`, `Ord a` --- в `sort`, `Show a` используется
 только в `f` при вызове `show`.
 
-# Step 6 (Parameters in a class)
+# Parameters in a class
 
     data T a = T a
 
@@ -92,7 +92,7 @@
 
 В теле `f` при встрече `(==)` будет выбрана нужная реализация в зависимости от типа аргументов.
 
-# Step 7 (Typeclass instances)
+# Typeclass instances
 
 Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию.
 Как уже говорилось, равенство необходимо определять для каждого типа по-своему,
@@ -111,7 +111,7 @@
 типа `Int#`. Во втором клозе `(==)` для списков в `x == y` используется равенство
 из `Eq a`, а в `xs == ys` используется равенство из `Eq [a]` (рекурсивный вызов).
 
-# Step 8 (Exercise: Implement Eq instance for binary trees)
+# Exercise: Implement Eq instance for binary trees
 
 Реализовать инстанс `Eq` для дерева:
 
@@ -119,7 +119,7 @@
        = Leaf a
        | Branch (Tree a) a (Tree a)
 
-# Step 9 (More on typeclasses)
+# More on typeclasses
 
 Но нужно ли ограничиваться одной функцией для класса типов? Нет,
 вот как определены классы `Eq` и `Ord` на самом деле:
@@ -197,7 +197,7 @@
 нужно определить хотя бы один из них. Обычно определяют либо `compare`, либо все кроме
 `max`, `min`.
 
-# Step 10 (Exercise: implement `MapLike`)
+# Exercise: implement `MapLike`
 
 Определить класс `MapLike` с методами `empty`, `lookup`, `insert`, `delete`, `fromList`.
 Они должны иметь ту же семантику, что и функции с этими именами в модуле `Data.Map`.
@@ -205,9 +205,9 @@
 
     newtype ListMap k v = ListMap [(k, v)]
 
-# Step 11 (Philosophy)
+# Philosophy
 
-## Математическая интерпретация классов
+## Математическая интерпретация классов {.unnumbered}
 
 Если рассматривать типы как множества, то классы типов можно понимать в математическом
 смысле: совокупность множеств, объединенная некоторым признаком.
@@ -219,7 +219,7 @@
 при условии, что множества из этого класса так же принадлежит классу `Eq`. Инстансы
 тогда интерпретируются как свидетели принадлежности множества классу.
 
-## Сходства с Java интерфейсами
+## Сходства с Java интерфейсами {.unnumbered}
 
 Если смотреть на классы типов со стороны ООП, то они напоминают
 интерфейсы в Java. Но есть отличие: в Java конкретная реализация
