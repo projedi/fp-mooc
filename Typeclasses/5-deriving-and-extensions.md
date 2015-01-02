@@ -1,3 +1,5 @@
+TODO: Add links to ghc user guide
+
 # Step 1 (deriving, standalone deriving)
 
 # Step 2 (Type synonym instances)
