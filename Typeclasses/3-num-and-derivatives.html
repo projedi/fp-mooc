@@ -60,7 +60,9 @@
 </ul>
 <p><code class="haskell">quot</code> и <code class="haskell">rem</code> работают быстрее, чем <code class="haskell">div</code> и <code class="haskell">mod</code>, но на отрицательных числах выдают другие результаты (например, <code class="haskell">(-1) `rem` 2 == -1</code>, а не соответсвующее математическому определению остатка <code class="haskell">(-1) `mod` 2 == 1</code>). Но если алгоритм использет много арифметики и заранее известно, что числа будут положительны, то использование <code class="haskell">rem</code> даст значительный прирост скорости (<a href="http://stackoverflow.com/questions/6964392/speed-comparison-with-project-euler-c-vs-python-vs-erlang-vs-haskell/6964760#6964760">пример</a>).</p>
 <p><code class="haskell">Enum</code> просто говорит, что можно перечислять элементы этого типа и будет рассмотрен в следующем уроке.</p>
-<p>TODO: Mention <code class="haskell">fromIntegral</code></p>
+<p>Нужно еще отметить функцию для преобразований из произвольных целых чисел <code class="haskell">fromIntegral</code>:</p>
+<pre><code class="haskell">fromIntegral :: (Integral a, Num b) =&gt; a -&gt; b
+fromIntegral = fromInteger . toInteger</code></pre>
 <h1 id="step-4-fractional">Step 4 (Fractional)</h1>
 <p>Деление поддерживается классом <code class="haskell">Fractional</code>:</p>
 <pre><code class="haskell">class Num a =&gt; Fractional a where
@@ -72,7 +74,9 @@
    x / y = x * recip y</code></pre>
 <p>Заметьте, что класс не наследуется от <code class="haskell">Real</code>, потому что, например, комплексные числа могут быть поделены друг на друга, но к вещественным числам не приводятся.</p>
 <p>Также в этом классе объявлена функция <code class="haskell">fromRational</code>, которая используется для литералов чисел с плавающей точкой. Например, <code class="haskell">3.2e-3</code> представляется как значение, соответствующее дроби <code class="haskell">32 / 10000</code> типа <code class="haskell">Rational</code>, примененяемое к <code class="haskell">fromRational</code>. Поэтому, <code class="haskell">3.2e-3 :: Fractional a =&gt; a</code>.</p>
-<p>TODO: Mention <code class="haskell">realToFrac</code></p>
+<p>По аналогии с <code class="haskell">fromIntegral</code> есть функция <code class="haskell">realToFrac</code> для преобразований из произвольных дробных чисел:</p>
+<pre><code class="haskell">realToFrac :: (Real a, Fractional b) =&gt; a -&gt; b
+realToFrac = fromRational . toRational</code></pre>
 <h1 id="step-5-floating">Step 5 (Floating)</h1>
 <p>Поскольку иррациональные числа невозможно в точности представить на компьютере, а заставлять хорошие (в плане корректности, а не производительности) нецелые числа вроде <code class="haskell">Rational</code> нарушать свои гарантии точности не хочется, то для тригонометрических функций, логарифмов и возведений в дробные степени был введен свой класс <code class="haskell">Floating</code>:</p>
 <pre><code class="haskell">class Fractional a =&gt; Floating a where
@@ -117,5 +121,7 @@
    isIEEE :: a -&gt; Bool
    atan2 :: a -&gt; a -&gt; a</code></pre>
 <p>Реализации по-умолчанию есть у <code class="haskell">exponent</code>, <code class="haskell">significand</code>, <code class="haskell">scaleFloat</code>, <code class="haskell">atan2</code>.</p>
+<p>Почти все функции относятся к внутреннему представлению чисел с плавающей точкой в виде <span class="math"><em>m</em> × <em>b</em><sup><em>n</em></sup></span>, где <span class="math"><em>m</em></span> — мантисса (<code class="haskell">significand</code>), <span class="math"><em>b</em></span> — основание (<code class="haskell">floatRadix</code>), а <span class="math"><em>n</em></span> — экспонента (<code class="haskell">exponent</code>).</p>
+<p>Выделяется из них всех функция <code class="haskell">atan2</code> — посчитать угол по вектора с координатами <code class="haskell">x, y</code>.</p>
 </body>
 </html>

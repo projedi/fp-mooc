@@ -68,7 +68,11 @@ class (Real a, Enum a) => Integral a where
 
 `Enum` просто говорит, что можно перечислять элементы этого типа и будет рассмотрен в следующем уроке.
 
-TODO: Mention `fromIntegral`
+Нужно еще отметить функцию для преобразований из произвольных целых чисел `fromIntegral`:
+```
+fromIntegral :: (Integral a, Num b) => a -> b
+fromIntegral = fromInteger . toInteger
+```
 
 # Step 4 (Fractional)
 
@@ -91,7 +95,12 @@ class Num a => Fractional a where
 дроби `32 / 10000` типа `Rational`, примененяемое к `fromRational`. Поэтому,
 `3.2e-3 :: Fractional a => a`.
 
-TODO: Mention `realToFrac`
+По аналогии с `fromIntegral` есть функция `realToFrac` для преобразований из произвольных
+дробных чисел:
+```
+realToFrac :: (Real a, Fractional b) => a -> b
+realToFrac = fromRational . toRational
+```
 
 # Step 5 (Floating)
 
@@ -154,3 +163,9 @@ class (RealFrac a, Floating a) => RealFloat a where
    atan2 :: a -> a -> a
 ```
 Реализации по-умолчанию есть у `exponent`, `significand`, `scaleFloat`, `atan2`.
+
+Почти все функции относятся к внутреннему представлению чисел с плавающей точкой в
+виде $m \times b^n$, где $m$ --- мантисса (`significand`), $b$ --- основание (`floatRadix`),
+а $n$ --- экспонента (`exponent`).
+
+Выделяется из них всех функция `atan2` --- посчитать угол по вектора с координатами `x, y`.
