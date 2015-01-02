@@ -392,12 +392,122 @@ instance Read Time where
 -- read &quot; + * 1 2 3  &quot; == Sum (Mul (Val 1) (Val 2)) (Val 3)</code></pre>
 <h2 id="класс-типов-num-и-его-наследники">Класс типов Num и его наследники</h2>
 <h3 id="step-1-num">Step 1 (Num)</h3>
+<p>Для работы с числами в Haskell есть целая иерархия классов типов. Самый базовый из них <code class="haskell">Num</code>:</p>
+<pre><code class="haskell">class Num a where
+   (+), (-), (*) :: a -&gt; a -&gt; a
+   negate :: a -&gt; a
+   abs :: a -&gt; a
+   signum :: a -&gt; a
+   fromInteger :: Integer -&gt; a
+
+   x - y = x + negate y
+   negate x = 0 - x</code></pre>
+<ul>
+<li><code class="haskell">(+)</code>, <code class="haskell">(-)</code>, <code class="haskell">(*)</code> — обычные операторы сложения, вычитания и умножения.</li>
+<li><code class="haskell">negate</code> — унарный минус.</li>
+<li><code class="haskell">abs</code> — модуль числа.</li>
+<li><code class="haskell">signum</code> — знак числа, должен соблюдаться закон <code class="haskell">abs x * signum x == x</code>.</li>
+<li><code class="haskell">fromInteger</code> — построение числа из <code class="haskell">Integer</code>.</li>
+</ul>
+<p><code class="haskell">fromInteger</code> используется при обработке численных литералов: когда мы пишем <code class="haskell">3</code>, компилятор переписывает это как применение <code class="haskell">fromInteger</code> к значению типа <code class="haskell">Integer</code>, отвечающему тройке. Именно поэтому верно <code class="haskell">3 :: Num a =&gt; a</code>.</p>
 <h3 id="step-2-real">Step 2 (Real)</h3>
+<p>Вспомогательный класс, служащий индикатором, что тип является числом, то есть может быть преобразован в <code class="haskell">Rational</code> (рациональная дробь с числителем и знаменателем имеющим тип <code class="haskell">Integer</code>):</p>
+<pre><code class="haskell">class (Num a, Ord a) =&gt; Real a where
+   toRational :: a -&gt; Rational</code></pre>
 <h3 id="step-3-integral">Step 3 (Integral)</h3>
+<p>Для работы с целыми числами (в основном, целочисленным делением) есть класс <code class="haskell">Integral</code>:</p>
+<pre><code class="haskell">class (Real a, Enum a) =&gt; Integral a where
+   quot :: a -&gt; a -&gt; a
+   rem :: a -&gt; a -&gt; a
+   div :: a -&gt; a -&gt; a
+   mod :: a -&gt; a -&gt; a
+   quotRem :: a -&gt; a -&gt; (a, a)
+   divMod :: a -&gt; a -&gt; (a, a)
+   toInteger :: a -&gt; Integer
+
+   n `quot` d = fst $ quotRem n d
+   n `rem` d = snd $ quotRem n d
+   n `div` d = fst $ divMod n d
+   n `mod` d = snd $ divMod n d
+   divMod n d = if signum r == negate (signum d) then (q - 1, r + d) else qr
+    where qr@(q, r) = quotRem n d</code></pre>
+<ul>
+<li><code class="haskell">quot</code> — целочисленное деление, округленное в сторону нуля.</li>
+<li><code class="haskell">rem</code> — остаток от деления, удовлетворяющий <code class="haskell">(x `quot` y) * y + (x `rem` y) == x</code></li>
+<li><code class="haskell">div</code> — целочисленное деление, округленное вниз.</li>
+<li><code class="haskell">mod</code> — остаток от деления, удовлетворяющий <code class="haskell">(x `div` y) * y + (x `mod` y) == x</code></li>
+</ul>
+<p><code class="haskell">quot</code> и <code class="haskell">rem</code> работают быстрее, чем <code class="haskell">div</code> и <code class="haskell">mod</code>, но на отрицательных числах выдают другие результаты (например, <code class="haskell">(-1) `rem` 2 == -1</code>, а не соответсвующее математическому определению остатка <code class="haskell">(-1) `mod` 2 == 1</code>). Но если алгоритм использет много арифметики и заранее известно, что числа будут положительны, то использование <code class="haskell">rem</code> даст значительный прирост скорости (<a href="http://stackoverflow.com/questions/6964392/speed-comparison-with-project-euler-c-vs-python-vs-erlang-vs-haskell/6964760#6964760">пример</a>).</p>
+<p><code class="haskell">Enum</code> просто говорит, что можно перечислять элементы этого типа и будет рассмотрен в следующем уроке.</p>
+<p>TODO: Mention <code class="haskell">fromIntegral</code></p>
 <h3 id="step-4-fractional">Step 4 (Fractional)</h3>
+<p>Деление поддерживается классом <code class="haskell">Fractional</code>:</p>
+<pre><code class="haskell">class Num a =&gt; Fractional a where
+   (/) :: a -&gt; a -&gt; a
+   recip :: a -&gt; a
+   fromRational :: Rational -&gt; a
+
+   recip = 1 / x
+   x / y = x * recip y</code></pre>
+<p>Заметьте, что класс не наследуется от <code class="haskell">Real</code>, потому что, например, комплексные числа могут быть поделены друг на друга, но к вещественным числам не приводятся.</p>
+<p>Также в этом классе объявлена функция <code class="haskell">fromRational</code>, которая используется для литералов чисел с плавающей точкой. Например, <code class="haskell">3.2e-3</code> представляется как значение, соответствующее дроби <code class="haskell">32 / 10000</code> типа <code class="haskell">Rational</code>, примененяемое к <code class="haskell">fromRational</code>. Поэтому, <code class="haskell">3.2e-3 :: Fractional a =&gt; a</code>.</p>
+<p>TODO: Mention <code class="haskell">realToFrac</code></p>
 <h3 id="step-5-floating">Step 5 (Floating)</h3>
+<p>Поскольку иррациональные числа невозможно в точности представить на компьютере, а заставлять хорошие (в плане корректности, а не производительности) нецелые числа вроде <code class="haskell">Rational</code> нарушать свои гарантии точности не хочется, то для тригонометрических функций, логарифмов и возведений в дробные степени был введен свой класс <code class="haskell">Floating</code>:</p>
+<pre><code class="haskell">class Fractional a =&gt; Floating a where
+   pi :: a
+   exp, log, sqrt :: a -&gt; a
+   (**), logBase :: a -&gt; a -&gt; a
+   sin, cos, tan :: a -&gt; a
+   asin, acos, atan :: a -&gt; a
+   sinh, cosh, tanh :: a -&gt; a
+   asinh, acosh, atanh :: a -&gt; a
+
+   x ** y = exp (log x * y)
+   logBase x y = log y / log x
+   sqrt x = x ** 0.5
+   tan x = sin x / cos x
+   tanh x = sinh x / cosh x</code></pre>
+<p>Он опять же не наследуется от <code class="haskell">Real</code>, потому что эти операции имеют смысл для комплексных чисел.</p>
 <h3 id="step-6-realfrac">Step 6 (RealFrac)</h3>
+<p>Теперь функции округления вещественных чисел:</p>
+<pre><code class="haskell">class (Real a, Fractional a) =&gt; RealFrac a where
+   properFraction :: (Integral b) =&gt; a -&gt; (b, a)
+   truncate :: (Integral b) =&gt; a -&gt; b
+   round :: (Integral b) =&gt; a -&gt; b
+   ceiling :: (Integral b) =&gt; a -&gt; b
+   floor :: (Integral b) =&gt; a -&gt; b
+
+   truncate x = fst $ properFraction x
+   round x = let (n, r) = properFraction x
+                 m = if r &lt; 0 then n - 1 else n + 1
+             in case signum (abs r - 0.5) of
+                   -1 -&gt; n
+                   0 -&gt; if even n then n else m
+                   1 -&gt; m
+                   _ -&gt; error &quot;Bad value&quot;
+   ceiling x = if r &gt; 0 then n + 1 else n
+    where (n, r) = properFraction x
+   floor x = if r &lt; 0 then n - 1 else n
+    where (n, r) = properFraction x</code></pre>
+<p><code class="haskell">properFraction</code> — поделить число на целую часть и правильную дробь (числитель строго меньше знаменателя).</p>
 <h3 id="step-7-realfloat">Step 7 (RealFloat)</h3>
+<pre><code class="haskell">class (RealFrac a, Floating a) =&gt; RealFloat a where
+   floatRadix :: a -&gt; Integer
+   floatDigits :: a -&gt; Int
+   floatRange :: a -&gt; (Int, Int)
+   decodeFloat :: a -&gt; (Integer, Int)
+   encodeFloat :: Integer -&gt; Int -&gt; a
+   exponent :: a -&gt; Int
+   significand :: a -&gt; a
+   scaleFloat :: Int -&gt; a -&gt; a
+   isNaN :: a -&gt; Bool
+   isInfinite :: a -&gt; Bool
+   isDenormalized :: a -&gt; Bool
+   isNegativeZero :: a -&gt; Bool
+   isIEEE :: a -&gt; Bool
+   atan2 :: a -&gt; a -&gt; a</code></pre>
+<p>Реализации по-умолчанию есть у <code class="haskell">exponent</code>, <code class="haskell">significand</code>, <code class="haskell">scaleFloat</code>, <code class="haskell">atan2</code>.</p>
 <h2 id="другие-стандартные-классы-типов">Другие стандартные классы типов</h2>
 <h3 id="step-1-enum">Step 1 (Enum)</h3>
 <h3 id="step-2-bounded">Step 2 (Bounded)</h3>
