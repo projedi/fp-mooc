@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <link rel="stylesheet" href="highlight/styles/default.css">
+  <script src="highlight/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+<h1 id="step-1-implementing-iselemof">Step 1 (Implementing <code class="haskell">isElemOf</code>)</h1>
+<p>Попробуем реализовать функцию, использующую равенство, — <code class="haskell">isElemOf</code>.</p>
+<p>Ясно, что реализация равенства зависит от типа, элементы которого сравниваем, поэтому нету функции на верхнем уровне вида <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code>. Можно попробовать передавать реализацию равенства аргументом:</p>
+<pre><code class="haskell">isElemOf :: (a -&gt; a -&gt; Bool) -&gt; a -&gt; [a] -&gt; Bool
+isElemOf _ _ [] = False
+isElemOf eq x (y : ys) = x `eq` y || isElemOf eq x ys</code></pre>
+<h1 id="step-2-exercise-implement-issublistof">Step 2 (Exercise: implement <code class="haskell">isSublistOf</code>)</h1>
+<p>Реализовать в терминах <code class="haskell">isElemOf</code>:</p>
+<pre><code class="haskell">isSublistOf :: (a -&gt; a -&gt; Bool) -&gt; [a] -&gt; [a] -&gt; Bool
+-- isSublistOf (==) [] [] == True
+-- isSublistOf (==) [] [1, 2, 3] == True
+-- isSublistOf (==) [2, 1] [1, 2, 3] == True
+-- isSublistOf (==) [2, 4] [1, 2, 3] == False</code></pre>
+<h1 id="step-3-typeclasses">Step 3 (Typeclasses)</h1>
+<p>А что если для нашей функции мы хотим передать не только реализацию равенства, а еще преобразование в строку и оператор <code class="haskell">(&lt;)</code>? Придется передавать 3 дополнительных аргумента и при этом первый и третий легко перепутать, так как они имеют одинаковый тип <code class="haskell">a -&gt; a -&gt; Bool</code>. Haskell предоставляет механизм классов типов, который позволяет автоматизировать процесс:</p>
+<pre><code class="haskell">class Eq a where
+   (==) :: a -&gt; a -&gt; Bool</code></pre>
+<p>Здесь мы декларируем функцию <code class="haskell">(==)</code> в <em>классе</em> <code class="haskell">Eq</code>. <code class="haskell">isElemOf</code> теперь можно переписать так:</p>
+<pre><code class="haskell">isElemOf :: (Eq a) =&gt; a -&gt; [a] -&gt; Bool
+isElemOf _ [] = False
+isElemOf x (y : ys) = x == y || x `isElemOf` ys</code></pre>
+<p>В сигнатуре функции все, что между <code class="haskell">::</code> и <code class="haskell">=&gt;</code> называется <em>контекстом</em>. В данном случае он состоит только из <code class="haskell">Eq a</code> и используется в качестве неявного аргумента для передачи функции <code class="haskell">(==)</code>.</p>
+<h1 id="step-4-exercise-implement-issublistof-again">Step 4 (Exercise: implement <code class="haskell">isSublistOf</code> again)</h1>
+<p>Реализовать в терминах <code class="haskell">isElemOf</code>:</p>
+<pre><code class="haskell">isSublistOf :: (Eq a) =&gt; [a] -&gt; [a] -&gt; Bool
+-- isSublistOf [] [] == True
+-- isSublistOf [] [1, 2, 3] == True
+-- isSublistOf [2, 1] [1, 2, 3] == True
+-- isSublistOf [2, 4] [1, 2, 3] == False</code></pre>
+<h1 id="step-5-multiple-constraints-in-a-context">Step 5 (Multiple constraints in a context)</h1>
+<p>Введем еще классы для оператора <code class="haskell">(&lt;)</code> и для преобразования в строку:</p>
+<pre><code class="haskell">class Ord a where
+   (&lt;) :: a -&gt; a -&gt; Bool
+
+class Show a where
+   show :: a -&gt; String</code></pre>
+<p>Теперь посмотрим на передачу <code class="haskell">(==)</code>, <code class="haskell">(&lt;)</code> и <code class="haskell">show</code> через контекст:</p>
+<pre><code class="haskell">import Data.List (nub, sort)
+
+-- sort :: (Ord a) =&gt; [a] -&gt; [a]
+-- nub :: (Eq a) =&gt; [a] -&gt; [a]
+
+f :: (Eq a, Ord a, Show a) =&gt; [a] -&gt; String
+f = show . nub . sort</code></pre>
+<p>В <code class="haskell">f</code> контекст состоит из <code class="haskell">(Eq a, Ord a, Show a)</code>. <code class="haskell">Eq a</code> неявно передается в <code class="haskell">nub</code>, <code class="haskell">Ord a</code> — в <code class="haskell">sort</code>, <code class="haskell">Show a</code> используется только в <code class="haskell">f</code> при вызове <code class="haskell">show</code>.</p>
+<h1 id="step-6-parameters-in-a-class">Step 6 (Parameters in a class)</h1>
+<pre><code class="haskell">data T a = T a
+
+f :: (Eq (T a), Eq b, Eq a) =&gt; a -&gt; T a -&gt; b
+f = ...</code></pre>
+<p>У функции <code class="haskell">f</code> контекст дает три неявных аргумента с функциями:</p>
+<pre><code class="haskell">(==) :: T a -&gt; T a -&gt; Bool
+(==) :: b -&gt; b -&gt; Bool
+(==) :: a -&gt; a -&gt; Bool</code></pre>
+<p>В теле <code class="haskell">f</code> при встрече <code class="haskell">(==)</code> будет выбрана нужная реализация в зависимости от типа аргументов.</p>
+<h1 id="step-7-typeclass-instances">Step 7 (Typeclass instances)</h1>
+<p>Теперь, наладив неявную передачу, необходимо откуда-то взять саму реализацию. Как уже говорилось, равенство необходимо определять для каждого типа по-своему, что и сделаем. Синтаксически это выглядит так:</p>
+<pre><code class="haskell">instance Eq Int where
+   (I# i1) == (I# i2) = i1 ==# i2
+
+instance (Eq a) =&gt; Eq [a] where
+   [] == [] = True
+   (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
+   _ == _ = False</code></pre>
+<p>Мы определяем эти <em>инстансы</em> на верхнем уровне и требуем, чтобы для каждого типа было не больше одного инстанса. Здесь <code class="haskell">(==#)</code> — встроенный оператор равенства для типа <code class="haskell">Int#</code>. Во втором клозе <code class="haskell">(==)</code> для списков в <code class="haskell">x == y</code> используется равенство из <code class="haskell">Eq a</code>, а в <code class="haskell">xs == ys</code> используется равенство из <code class="haskell">Eq [a]</code> (рекурсивный вызов).</p>
+<h1 id="step-8-exercise-implement-eq-instance-for-binary-trees">Step 8 (Exercise: Implement Eq instance for binary trees)</h1>
+<p>Реализовать инстанс <code class="haskell">Eq</code> для дерева:</p>
+<pre><code class="haskell">data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)</code></pre>
+<h1 id="step-9-more-on-typeclasses">Step 9 (More on typeclasses)</h1>
+<p>Но нужно ли ограничиваться одной функцией для класса типов? Нет, вот как определены классы <code class="haskell">Eq</code> и <code class="haskell">Ord</code> на самом деле:</p>
+<pre><code class="haskell">class Eq a where
+   (==) :: a -&gt; a -&gt; Bool
+   (/=) :: a -&gt; a -&gt; Bool
+   x /= y = not (x == y)
+
+class (Eq a) =&gt; Ord a where
+   compare :: a -&gt; a -&gt; Ordering
+   compare x y
+    | x == y = EQ
+    | x &lt;= y = LT
+    | otherwise = GT
+
+   (&lt;), (&lt;=), (&gt;), (&gt;=) :: a -&gt; a -&gt; Bool
+   x &lt; y =
+      case compare x y of
+         LT -&gt; True
+         _ -&gt; False
+   x &lt;= y =
+      case compare x y of
+         GT -&gt; False
+         _ -&gt; True
+   x &gt; y =
+      case compare x y of
+         GT -&gt; True
+         _ -&gt; False
+   x &gt;= y =
+      case compare x y of
+         LT -&gt; False
+         _ -&gt; True
+
+   max, min :: a -&gt; a -&gt; a
+   max x y = if x &lt;= y then y else x
+   min x y = if x &lt;= y then x else y
+
+instance Eq Int where
+   (I# i1) == (I# i2) = i1 ==# i2
+   (I# i1) /= (I# i2) = i1 /=# i2
+
+instance Eq a =&gt; Eq [a] where
+   [] == [] = True
+   (x : xs) == (y : ys) = x == y &amp;&amp; xs == ys
+   _ == _ = False
+
+instance (Ord a) =&gt; Ord [a] where
+   compare [] [] = EQ
+   compare [] (_ : _) = LT
+   compare (_ : _) [] = GT
+   compare (x : xs) (y : ys) =
+      case compare x y of
+         EQ -&gt; compare xs ys
+         other -&gt; other
+
+instance Ord Int where
+   (I# x#) `compare` (I# y#)
+    | isTrue# (x# &lt;# y#) = LT
+    | isTrue# (x# ==# y#) = EQ
+    | otherwise = GT
+   (I# x) &lt; (I# y) = isTrue# (x &lt;# y)
+   (I# x) &lt;= (I# y) = isTrue# (x &lt;=# y)
+   (I# x) &gt;= (I# y) = isTrue# (x &gt;=# y)
+   (I# x) &gt; (I# y) = isTrue# (x &gt;# y)</code></pre>
+<p>Здесь в <code class="haskell">Eq</code> определены 2 функции <code class="haskell">(==)</code>, <code class="haskell">(/=)</code> и у <code class="haskell">(/=)</code> есть реализация по умолчанию. В инстансе для списка используется именно она, а в инстансе для <code class="haskell">Int</code> она переопределена в интересах эффективности.</p>
+<p><code class="haskell">Ord</code> интереснее: во-первых, определяя инстанс для <code class="haskell">Ord</code>, необходимо так же определять инстанс <code class="haskell">Eq</code> (присутствие контекста <code class="haskell">(Eq a) =&gt;</code> при определении <code class="haskell">Ord</code>). Во-вторых, каждая функция имеет реализацию по-умолчанию. При этом, <code class="haskell">compare</code> определен через <code class="haskell">(&lt;=)</code> и <code class="haskell">(&lt;=)</code> определен через <code class="haskell">compare</code>. Поэтому, чтобы программа не ушла в бесконечный цикл, нужно определить хотя бы один из них. Обычно определяют либо <code class="haskell">compare</code>, либо все кроме <code class="haskell">max</code>, <code class="haskell">min</code>.</p>
+<h1 id="step-10-exercise-implement-maplike">Step 10 (Exercise: implement <code class="haskell">MapLike</code>)</h1>
+<p>Определить класс <code class="haskell">MapLike</code> с методами <code class="haskell">empty</code>, <code class="haskell">lookup</code>, <code class="haskell">insert</code>, <code class="haskell">delete</code>, <code class="haskell">fromList</code>. Они должны иметь ту же семантику, что и функции с этими именами в модуле <code class="haskell">Data.Map</code>. У <code class="haskell">fromList</code> должна быть реализация по умолчанию. Определить инстансы для <code class="haskell">Data.Map.Map</code> и для <code class="haskell">ListMap</code>:</p>
+<pre><code class="haskell">newtype ListMap k v = ListMap [(k, v)]</code></pre>
+<h1 id="step-11-philosophy">Step 11 (Philosophy)</h1>
+<h2 id="математическая-интерпретация-классов">Математическая интерпретация классов</h2>
+<p>Если рассматривать типы как множества, то классы типов можно понимать в математическом смысле: совокупность множеств, объединенная некоторым признаком.</p>
+<p>В случае <code class="haskell">Eq</code> мы определяем совокупность множеств, таких что для каждого множества <code class="haskell">a</code> определена операция <code class="haskell">(==) :: a -&gt; a -&gt; Bool</code> и операция <code class="haskell">(/=) :: a -&gt; a -&gt; Bool</code>.</p>
+<p>В случае <code class="haskell">Ord</code> мы определяем класс множеств, с операциями <code class="haskell">compare</code>, <code class="haskell">(&lt;)</code>, … и при условии, что множества из этого класса так же принадлежит классу <code class="haskell">Eq</code>. Инстансы тогда интерпретируются как свидетели принадлежности множества классу.</p>
+<h2 id="сходства-с-java-интерфейсами">Сходства с Java интерфейсами</h2>
+<p>Если смотреть на классы типов со стороны ООП, то они напоминают интерфейсы в Java. Но есть отличие: в Java конкретная реализация выбирается по неявному аргументу <code class="haskell">this</code>, а в Haskell участвует вся сигнатура функции:</p>
+<pre><code class="haskell">class C a where
+   m1 :: a -&gt; Integer
+   m2 :: Integer -&gt; a
+   m3 :: [a] -&gt; Integer
+
+instance C Int where
+   m1 x = ...
+   m2 i = ...
+   m3 xs = ...</code></pre>
+<p>В <code class="haskell">f1</code>, <code class="haskell">f2</code>, <code class="haskell">f3</code> реализации <code class="haskell">m1</code>, <code class="haskell">m2</code>, <code class="haskell">m3</code> выбираются из инстанса <code class="haskell">C Int</code>:</p>
+<pre><code class="haskell">a1, a2, a3 :: Int
+a1 = 1
+a2 = 2
+a3 = 3
+
+f1 :: Integer
+f1 = m1 a1
+
+f2 :: Int
+f2 = m2 0
+
+f3 :: Integer
+f3 = m3 [a1, a2, a3]</code></pre>
+</body>
+</html>

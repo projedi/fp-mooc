@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <link rel="stylesheet" href="highlight/styles/default.css">
+  <script src="highlight/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+<h1 id="step-1-show">Step 1 (Show)</h1>
+<p>Для преобразования в строку в Haskell есть класс типов <code class="haskell">Show</code>:</p>
+<pre><code class="haskell">class Show a where
+   show :: a -&gt; String</code></pre>
+<p>Он в том числе используется ghci, чтобы напечатать результат. Вот пример реализации инстанса для бинарного дерева:</p>
+<pre><code class="haskell">data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+instance Show a =&gt; Show (Tree a) where
+   show (Leaf x) = show x
+   show (Branch l x r) = &quot;(&quot; ++ show l ++ &quot;) &quot; ++ show x ++ &quot; (&quot; ++ show r ++ &quot;)&quot;</code></pre>
+<h1 id="step-2-exercise-implement-show-instance-for-binary-trees-by-drawing">Step 2 (Exercise: Implement Show instance for binary trees by drawing)</h1>
+<p>Реализовать инстанс <code class="haskell">Show</code> для деревьев, который бы “рисовал” деревья:</p>
+<pre><code class="haskell">data Tree a
+   = Leaf a
+   | Branch (Tree a) a (Tree a)
+
+-- show (Leaf 0) == &quot;0\n&quot;
+-- show (Branch (Leaf 0) 1 (Leaf 2)) == &quot; 1 \n\
+--                                      \0 2\n&quot;
+-- show (Branch (Branch (Leaf 0) 24 (Leaf 22)) 45 (Branch (Branch (Leaf 34) 37 (Leaf 8)) 100 (Leaf 1))) ==
+--    &quot;     45         \n\
+--    \ 24         100 \n\
+--    \0  22    37    1\n\
+--    \       34  8    \n\</code></pre>
+<p><em>Подсказка</em>: Напишите вспомогательную функцию, которая строит отрисованное дерево построчно (так проще склеивать два поддерева при обработке <code class="haskell">Branch</code>). А <code class="haskell">show</code> просто вызовет эту функцию и применит к результату <code class="haskell">unlines</code>.</p>
+<h1 id="step-3-show-is-slow">Step 3 (Show is slow)</h1>
+<p>Посмотрим теперь на производительность <code class="haskell">show</code>:</p>
+<pre><code class="haskell">data Nat = S Nat | Z
+
+instance Show Nat where
+   show Z = &quot;0&quot;
+   show (S n) = show n ++ &quot;+1&quot;
+
+-- show (S (S Z)) =&gt;
+-- show (S Z) ++ &quot;+1&quot; =&gt;
+-- (show Z ++ &quot;+1&quot;) ++ &quot;+1&quot; =&gt;
+-- (&quot;0&quot; ++ &quot;+1&quot;) ++ &quot;+1&quot;</code></pre>
+<p>Мы получили последовательность скобок, при которой время работы <code class="haskell">(++)</code> наихудшее. Попробуем исправить ситуацию:</p>
+<pre><code class="haskell">type ShowS = String -&gt; String
+
+showNat :: Nat -&gt; ShowS
+showNat Z = (&quot;0&quot; ++)
+showNat (S n) = showNat n . (&quot;+1&quot; ++)
+
+instance Show Nat where
+   show n = showNat n &quot;&quot;
+
+-- show (S (S Z)) =&gt;
+-- showNat (S (S Z)) &quot;&quot; =&gt;
+-- (showNat (S Z) . (&quot;+1&quot; ++)) &quot;&quot; =&gt;
+-- (\x -&gt; showNat (S Z) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; (showNat Z . (&quot;+1&quot; ++)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; (\y -&gt; showNat Z (&quot;+1&quot; ++ y)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; (\y -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ y)) (&quot;+1&quot; ++ x)) &quot;&quot; =&gt;
+-- (\x -&gt; &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ x))) &quot;&quot; =&gt;
+-- &quot;0&quot; ++ (&quot;+1&quot; ++ (&quot;+1&quot; ++ &quot;&quot;))</code></pre>
+<p>Использование композиции для конкатенации строк исправило ситуацию. Можете проверить, что если showNat выглядел бы так:</p>
+<pre><code class="haskell">showNat :: Nat -&gt; ShowS
+showNat Z = (&quot;0&quot; ++)
+showNat (S n) = (&quot;1+&quot; ++) . showNat n</code></pre>
+<p>то последовательность скобок осталась бы эффективной.</p>
+<h1 id="step-4-show-again">Step 4 (Show again)</h1>
+<p>Этот трюк на самом деле используется и в самом <code class="haskell">Show</code>. Вот как класс выглядит на самом деле:</p>
+<pre><code class="haskell">class Show a where
+   showPrec :: Int -&gt; a -&gt; ShowS
+   show :: a -&gt; String
+   showList :: [a] -&gt; ShowS</code></pre>
+<p>Достаточно реализовать <code class="haskell">showPrec</code> <em>или</em> <code class="haskell">show</code>. <code class="haskell">showList</code> позволяет переопределить, как будет показываться список элементов (используется в <code class="haskell">Show Char</code> для обработки <code class="haskell">String</code>). <code class="haskell">showPrec</code> первым аргументом принимает приоритет оператора в окружающем контексте (от 0 до 11) — используется, например, при выводе инфиксных операторов.</p>
+<p>Также есть набор вспомогательных функций:</p>
+<pre><code class="haskell">shows :: (Show a) =&gt; a -&gt; ShowS
+shows = showPrec 0
+
+showChar :: Char -&gt; ShowS
+showChar = (:)
+
+showString :: String -&gt; ShowS
+showString = (++)
+
+showParen :: Bool -&gt; ShowS -&gt; ShowS
+showParen b p = if b then showChar &#39;(&#39; . p . showChar &#39;)&#39; else p</code></pre>
+<h1 id="step-5-exercise-implement-show-instance-for-expressions">Step 5 (Exercise: Implement Show instance for expressions)</h1>
+<p>Реализовать инстанс <code class="haskell">Show</code> для арифметических выражений:</p>
+<pre><code class="haskell">data Expr
+   = Val Int
+   | Sum Expr Expr
+   | Mul Expr Expr
+
+-- show (Sum (Mul (Val 1) (Val 2)) (Mul (Val 3) (Val 4))) == &quot;1 * 2 + 3 * 4&quot;
+-- show (Mul (Sum (Val 1) (Val 2)) (Sum (Val 3) (Val 4))) == &quot;(1 + 2) * (3 + 4)&quot;
+-- show (Sum (Val 1) (Sum (Val 2) (Val 3))) == &quot;1 + 2 + 3&quot;
+-- show (Mul (Mul (Val 1) (Val 2)) (Val 3)) == &quot;1 * 2 * 3&quot;</code></pre>
+<h1 id="step-6-read">Step 6 (Read)</h1>
+<p>Помимо преобразования в строку в Haskell есть так же класс для преобразования из строки, <code class="haskell">Read</code>. Вот, как обычно, его часть вместе со вспомогательными функциями:</p>
+<pre><code class="haskell">type ReadS a = String -&gt; [(a, String)]
+
+class Read a where
+   readsPrec :: Int -&gt; ReadS a
+   readList :: ReadS [a]
+
+reads :: Read a =&gt; ReadS a
+read :: Read a =&gt; String -&gt; a
+readParen :: Bool -&gt; ReadS a -&gt; ReadS a
+lex :: ReadS String</code></pre>
+<p>Достаточно определить <code class="haskell">readsPrec</code>.</p>
+<ul>
+<li><code class="haskell">ReadS a</code> — парсер для <code class="haskell">a</code>: принимает на вход строку и возвращает список возможных результатов <code class="haskell">(a, String)</code>, где <code class="haskell">String</code> — остаток строки, не участвовший в парсинге.</li>
+<li><code class="haskell">readsPrec</code> — так же, как и <code class="haskell">showPrec</code> принимает первым аргументом приоритет оператора в окружающем контексте.</li>
+<li><code class="haskell">readList</code> — так же, как и <code class="haskell">showList</code> используется для особой обработки парсинга списков. И используется в инстансе <code class="haskell">Read Char</code>.</li>
+<li><code class="haskell">reads</code> — эквивалентно <code class="haskell">readsPrec 0</code>.</li>
+<li><code class="haskell">read</code> — попытается <em>полностью</em> распарсить вход и упадет с ошибкой при неудаче.</li>
+<li><code class="haskell">readParen</code> — <code class="haskell">readParen True p</code> парсит <code class="haskell">p</code>, заключенное в скобки; <code class="haskell">readParen False p</code> парсит <code class="haskell">p</code>, <em>возможно</em> заключенное в скобки.</li>
+<li><code class="haskell">lex</code> — прочитать одну лексему, пропустив лидирующие пробелы. Лексема:
+<ul>
+<li><code class="haskell">'a'</code> — символьный литерал</li>
+<li><code class="haskell">&quot;abc&quot;</code> — строковый литерал</li>
+<li><code class="haskell">foo123'</code> — идентификатор в Haskell</li>
+<li><code class="haskell">&lt;&lt;</code>, <code class="haskell">:</code>, … — оператор в Haskell</li>
+<li><code class="haskell">(</code>, <code class="haskell">::</code>, … — пунктуация и зарезервированные символы в Haskell</li>
+<li><code class="haskell">12.3e-45</code> — число</li>
+</ul></li>
+</ul>
+<h1 id="step-7-read-example">Step 7 (Read example)</h1>
+<p>В качестве примера, рассмотрим парсинг времени поддерживающий как “22:34”, так и “10:34PM”:</p>
+<pre><code class="haskell">data Time = Time
+   { hours :: Int
+   , minutes :: Int
+   }
+   deriving Show
+
+data DayPeriod = AM | PM
+
+instance Read DayPeriod where
+   readsPrec p = go
+    where go (&#39; &#39;:s) = go s
+          go (&#39;A&#39;:&#39;M&#39;:s) = [(AM, s)]
+          go (&#39;P&#39;:&#39;M&#39;:s) = [(PM, s)]
+          go _ = []
+
+instance Read Time where
+   readsPrec p s =
+      [ (t, s&#39;&#39;)
+      | ((h, m), s&#39;) &lt;- hoursMinutes s
+      , (dp, s&#39;&#39;) &lt;- readsPrec p s&#39;
+      , t &lt;- case dp of
+                AM -&gt; [ Time (h `rem` 12) m | h &gt;= 1 &amp;&amp; h &lt;= 12 ]
+                PM -&gt; [ Time (h `rem` 12 + 12) m | h &gt;= 1 &amp;&amp; h &lt;= 12 ]
+      ] ++
+      [ (Time h m, s&#39;)
+      | ((h, m), s&#39;) &lt;- hoursMinutes s
+      , h &gt;= 0 &amp;&amp; h &lt; 24
+      ]
+    where
+      hoursMinutes :: ReadS (Int, Int)
+      hoursMinutes s =
+         [ ((h, m), s&#39;&#39;)
+         | (h, (&#39;:&#39; : s&#39;)) &lt;- readsPrec p s
+         , (m, s&#39;&#39;) &lt;- readsPrec p s&#39;
+         , m &gt;= 0 &amp;&amp; m &lt; 60
+         ]</code></pre>
+<p>Если это выглядит не очень элегантно, то все как надо. Инструменты, которые позволят писать приличный код для парсинга будут рассмотрены в последних двух модулях этого курса.</p>
+<p>Инстанс для <code class="haskell">DayPeriod</code> смотрит на входную строку, пропускает лидирующие пробельные символы и, если строка начинается с <code class="haskell">&quot;AM&quot;</code> или <code class="haskell">&quot;PM&quot;</code>, возвращает соответственно <code class="haskell">AM</code> или <code class="haskell">PM</code> вместе с остатком строки. Иначе возвращает пустой список результатов.</p>
+<p>Инстанс для <code class="haskell">Time</code> использует генераторы списков возможно неожиданным способом. Идея в том, чтобы рассматривать функции, возвращающие списки, как недетерминированные вычисления: списком на выходе мы возвращаем все возможные результаты этого вычисления (которых может быть любое количество, в том числе 0). В этом случае под</p>
+<pre><code class="haskell">[ y | y &lt;- f, y &gt;= 0] ++ [ y | x &lt;- f, y &lt;- g x, y &gt;= 0 ]</code></pre>
+<p>понимается недетрминированное вычисление, возвращающее либо неотрицательное значениe <code class="haskell">f</code>, либо неотрицательный результат применения <code class="haskell">f</code> к <code class="haskell">g</code>.</p>
+<p>Посмотрим теперь на парсинг <code class="haskell">Time</code>. Подпарсер <code class="haskell">hoursMinutes</code> можно читать так:</p>
+<ol style="list-style-type: decimal">
+<li>Читаем <code class="haskell">Int</code>, за которым следует <code class="haskell">:</code> и храним этот <code class="haskell">Int</code> в <code class="haskell">h</code>.</li>
+<li>Читаем <code class="haskell">Int</code> и храним его в <code class="haskell">m</code>.</li>
+<li>Требуем <code class="haskell">m &gt;= 0 &amp;&amp; m &lt; 60</code>.</li>
+<li>Возвращаем пару <code class="haskell">(h, m)</code>.</li>
+</ol>
+<p>Сам парсер состоит из 2-х частей. Пытаемся распарсить вход как:</p>
+<ul>
+<li>либо с наличием AM/PM:
+<ol style="list-style-type: decimal">
+<li>Читаем <code class="haskell">(h, m)</code> с помощью <code class="haskell">hoursMinutes</code>.</li>
+<li>Читаем <code class="haskell">DayPeriod</code> и храним его в <code class="haskell">dp</code>.</li>
+<li>В зависимости от <code class="haskell">dp</code> ставим ограничения на <code class="haskell">h</code> и конструируем <code class="haskell">Time</code> из <code class="haskell">h</code> и <code class="haskell">m</code>.</li>
+</ol></li>
+<li>либо без:
+<ol style="list-style-type: decimal">
+<li>Читаем <code class="haskell">(h, m)</code> с помощью <code class="haskell">hoursMinutes</code>.</li>
+<li>Требуем <code class="haskell">h &gt;= 0 &amp;&amp; h &lt; 24</code>.</li>
+<li>Возвращаем <code class="haskell">Time h m</code>.</li>
+</ol></li>
+</ul>
+<p>Вызов <code class="haskell">read s</code> для парсинга <code class="haskell">Time</code> тогда будет смотреть на результат <code class="haskell">readPrec 0 s</code>:</p>
+<ul>
+<li>Если есть ровно один результат, с пустой оставшейся строкой, то он вернет его.</li>
+<li>Если есть несколько таких результатов, то упадет, сказав, что парсинг недетерминированный.</li>
+<li>Если нет ни одного результата, либо все результаты имеют какую-то оставшуюся строку, то упадет, сказав, что парсинг неудачный.</li>
+</ul>
+<h1 id="step-8-exercise-implement-show-and-read-instances-to-transform-expression-to-pn-and-back">Step 8 (Exercise: Implement Show and Read instances to transform expression to PN and back)</h1>
+<p>Польская запись — запись выражения в префиксной форме (оператор следует перед своими аргументами). Например, “+ * 1 2 * 3 4” в инфиксной форме выглядит как “1 * 2 + 3 * 4”.</p>
+<p>Реализовать инстансы <code class="haskell">Show</code> и <code class="haskell">Read</code> для преобразования выражения в польскую запись и обратно:</p>
+<pre><code class="haskell">data Expr
+   = Val Int
+   | Sum Expr Expr
+   | Mul Expr Expr
+
+-- show (Sum (Mul (Val 1) (Val 2)) (Mul (Val 3) (Val 4))) == &quot;+ * 1 2 * 3 4&quot;
+-- read &quot; + * 1 2 3  &quot; == Sum (Mul (Val 1) (Val 2)) (Val 3)</code></pre>
+</body>
+</html>
