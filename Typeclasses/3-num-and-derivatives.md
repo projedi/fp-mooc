@@ -182,4 +182,4 @@ data Matrix3x3 = Matrix3x3 [[Double]]
       `Rational`    ✓       ✓          ✗             ✓             ✗            ✓             ✗
         `Double`    ✓       ✓          ✗             ✓             ✓            ✓             ✓
 `Complex Double`    ✓       ✓          ✗             ✓             ✓            ✗             ✗
-     `Matrix3x3`    ✓       ✗          ✗             ✗             ✗            ✗             ✗
+     `Matrix3x3`    ✓       ✗          ✗             ✓             ✓            ✗             ✗
