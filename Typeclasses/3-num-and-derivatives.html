@@ -97,20 +97,8 @@
    truncate :: (Integral b) =&gt; a -&gt; b
    round :: (Integral b) =&gt; a -&gt; b
    ceiling :: (Integral b) =&gt; a -&gt; b
-   floor :: (Integral b) =&gt; a -&gt; b
-
-   truncate x = fst $ properFraction x
-   round x = let (n, r) = properFraction x
-                 m = if r &lt; 0 then n - 1 else n + 1
-             in case signum (abs r - 0.5) of
-                   -1 -&gt; n
-                   0 -&gt; if even n then n else m
-                   1 -&gt; m
-                   _ -&gt; error &quot;Bad value&quot;
-   ceiling x = if r &gt; 0 then n + 1 else n
-    where (n, r) = properFraction x
-   floor x = if r &lt; 0 then n - 1 else n
-    where (n, r) = properFraction x</code></pre>
+   floor :: (Integral b) =&gt; a -&gt; b</code></pre>
+<p>Реализации по-умолчанию есть у <code class="haskell">truncate</code>, <code class="haskell">round</code>, <code class="haskell">ceiling</code>, <code class="haskell">floor</code>.</p>
 <p><code class="haskell">properFraction</code> — поделить число на целую часть и правильную дробь (числитель строго меньше знаменателя).</p>
 <h1 id="step-7-realfloat">Step 7 (RealFloat)</h1>
 <pre><code class="haskell">class (RealFrac a, Floating a) =&gt; RealFloat a where
