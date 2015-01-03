@@ -28,11 +28,18 @@
 <li><code class="haskell">signum</code> — знак числа; должен соблюдаться закон <code class="haskell">abs x * signum x == x</code>.</li>
 </ul>
 <p><code class="haskell">fromInteger</code> используется при обработке целочисленных литералов: когда мы пишем <code class="haskell">3</code>, компилятор переписывает это как применение значения типа <code class="haskell">Integer</code>, отвечающее тройке, к <code class="haskell">fromInteger</code>. Именно поэтому верно <code class="haskell">3 :: Num a =&gt; a</code>.</p>
-<h1 id="real"><span class="header-section-number">2</span> Real</h1>
+<h1 id="num-pain"><span class="header-section-number">2</span> Num pain</h1>
+<p><code class="haskell">Num</code> считается спорным инженерным решением:</p>
+<ul>
+<li>Комплексные числа и матрицы, например, можно складывать друг с другом, но <code class="haskell">signum</code> на них не имеет никакого смысла. Можно, конечно, ввести для них свои операторы сложения, но тогда мы теряем в модульности: код, складывающий все элементы в списке должен быть разный для вещественных и для комплексных чисел. Поэтому, часто при написании инстансов нереализуемым операциям просто присваивают <code class="haskell">undefined</code>.</li>
+<li>Некоторые жалуются, что нельзя сделать <code class="haskell">(1 :: Int32) + (2 :: Int64)</code> и чтобы компилятор автоматически вывел тип <code class="haskell">Int64</code> у результата. Другие утверждают, что это хорошо, потому что все приведения типа (с помощью <code class="haskell">fromIntegral</code> и <code class="haskell">realToFrac</code>, о которых будет сказано позже) явные и при чтении кода их нельзя пропустить.</li>
+<li>Проблема, похожая на предыдущую: пусть у нас есть тип данных <code class="haskell">Matrix m n a</code>, где в <code class="haskell">m</code> и <code class="haskell">n</code> на уровне типов закодированы размерности матрицы (как это делать выходит за рамки курса). Тогда бы мы хотели, чтобы у операции умножения был тип <code class="haskell">Matrix m n a -&gt; Matrix n k a -&gt; Matrix m k a</code>, а <code class="haskell">(*)</code> этому не удовлетворяет.</li>
+</ul>
+<h1 id="real"><span class="header-section-number">3</span> Real</h1>
 <p>Вспомогательный класс, служащий индикатором, что тип является числом, то есть может быть преобразован в <code class="haskell">Rational</code> (рациональная дробь с числителем и знаменателем имеющим тип <code class="haskell">Integer</code>):</p>
 <pre><code class="haskell">class (Num a, Ord a) =&gt; Real a where
    toRational :: a -&gt; Rational</code></pre>
-<h1 id="integral"><span class="header-section-number">3</span> Integral</h1>
+<h1 id="integral"><span class="header-section-number">4</span> Integral</h1>
 <p>Для работы с целыми числами (в основном, целочисленным делением) есть класс <code class="haskell">Integral</code>:</p>
 <pre><code class="haskell">class (Real a, Enum a) =&gt; Integral a where
    quot :: a -&gt; a -&gt; a
@@ -60,7 +67,7 @@
 <p>Нужно еще отметить функцию для преобразований из произвольных целых чисел <code class="haskell">fromIntegral</code>:</p>
 <pre><code class="haskell">fromIntegral :: (Integral a, Num b) =&gt; a -&gt; b
 fromIntegral = fromInteger . toInteger</code></pre>
-<h1 id="fractional"><span class="header-section-number">4</span> Fractional</h1>
+<h1 id="fractional"><span class="header-section-number">5</span> Fractional</h1>
 <p>Деление поддерживается классом <code class="haskell">Fractional</code>:</p>
 <pre><code class="haskell">class Num a =&gt; Fractional a where
    (/) :: a -&gt; a -&gt; a
@@ -74,7 +81,7 @@ fromIntegral = fromInteger . toInteger</code></pre>
 <p>По аналогии с <code class="haskell">fromIntegral</code> есть функция <code class="haskell">realToFrac</code> для преобразований из произвольных дробных чисел:</p>
 <pre><code class="haskell">realToFrac :: (Real a, Fractional b) =&gt; a -&gt; b
 realToFrac = fromRational . toRational</code></pre>
-<h1 id="floating"><span class="header-section-number">5</span> Floating</h1>
+<h1 id="floating"><span class="header-section-number">6</span> Floating</h1>
 <p>Поскольку иррациональные числа невозможно в точности представить на компьютере, а заставлять хорошие (в плане корректности, а не производительности) нецелые числа вроде <code class="haskell">Rational</code> нарушать свои гарантии точности не хочется, то для тригонометрических функций, логарифмов и возведений в дробные степени был введен свой класс <code class="haskell">Floating</code>:</p>
 <pre><code class="haskell">class Fractional a =&gt; Floating a where
    pi :: a
@@ -91,7 +98,7 @@ realToFrac = fromRational . toRational</code></pre>
    tan x = sin x / cos x
    tanh x = sinh x / cosh x</code></pre>
 <p>Он опять же не наследуется от <code class="haskell">Real</code>, потому что эти операции имеют смысл для комплексных чисел.</p>
-<h1 id="realfrac"><span class="header-section-number">6</span> RealFrac</h1>
+<h1 id="realfrac"><span class="header-section-number">7</span> RealFrac</h1>
 <p>Теперь функции округления вещественных чисел:</p>
 <pre><code class="haskell">class (Real a, Fractional a) =&gt; RealFrac a where
    properFraction :: (Integral b) =&gt; a -&gt; (b, a)
@@ -101,7 +108,7 @@ realToFrac = fromRational . toRational</code></pre>
    floor :: (Integral b) =&gt; a -&gt; b</code></pre>
 <p>Реализации по-умолчанию есть у <code class="haskell">truncate</code>, <code class="haskell">round</code>, <code class="haskell">ceiling</code>, <code class="haskell">floor</code>.</p>
 <p><code class="haskell">properFraction</code> — поделить число на целую часть и правильную дробь (числитель строго меньше знаменателя).</p>
-<h1 id="realfloat"><span class="header-section-number">7</span> RealFloat</h1>
+<h1 id="realfloat"><span class="header-section-number">8</span> RealFloat</h1>
 <pre><code class="haskell">class (RealFrac a, Floating a) =&gt; RealFloat a where
    floatRadix :: a -&gt; Integer
    floatDigits :: a -&gt; Int
@@ -120,7 +127,7 @@ realToFrac = fromRational . toRational</code></pre>
 <p>Реализации по-умолчанию есть у <code class="haskell">exponent</code>, <code class="haskell">significand</code>, <code class="haskell">scaleFloat</code>, <code class="haskell">atan2</code>.</p>
 <p>Почти все функции относятся к внутреннему представлению чисел с плавающей точкой в виде <span class="math"><em>m</em> × <em>b</em><sup><em>n</em></sup></span>, где <span class="math"><em>m</em></span> — мантисса (<code class="haskell">significand</code>), <span class="math"><em>b</em></span> — основание (<code class="haskell">floatRadix</code>), а <span class="math"><em>n</em></span> — экспонента (<code class="haskell">exponent</code>).</p>
 <p>Выделяется из них всех функция <code class="haskell">atan2</code> — посчитать угол по вектора с координатами <code class="haskell">x, y</code>.</p>
-<h1 id="instance-table"><span class="header-section-number">8</span> Instance table</h1>
+<h1 id="instance-table"><span class="header-section-number">9</span> Instance table</h1>
 <pre><code class="haskell">data Matrix3x3 = Matrix3x3 [[Double]]</code></pre>
 <table>
 <thead>
