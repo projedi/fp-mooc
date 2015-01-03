@@ -24,13 +24,10 @@
    x - y = x + negate y
    negate x = 0 - x</code></pre>
 <ul>
-<li><code class="haskell">(+)</code>, <code class="haskell">(-)</code>, <code class="haskell">(*)</code> — обычные операторы сложения, вычитания и умножения.</li>
-<li><code class="haskell">negate</code> — унарный минус.</li>
 <li><code class="haskell">abs</code> — модуль числа.</li>
-<li><code class="haskell">signum</code> — знак числа, должен соблюдаться закон <code class="haskell">abs x * signum x == x</code>.</li>
-<li><code class="haskell">fromInteger</code> — построение числа из <code class="haskell">Integer</code>.</li>
+<li><code class="haskell">signum</code> — знак числа; должен соблюдаться закон <code class="haskell">abs x * signum x == x</code>.</li>
 </ul>
-<p><code class="haskell">fromInteger</code> используется при обработке численных литералов: когда мы пишем <code class="haskell">3</code>, компилятор переписывает это как применение <code class="haskell">fromInteger</code> к значению типа <code class="haskell">Integer</code>, отвечающему тройке. Именно поэтому верно <code class="haskell">3 :: Num a =&gt; a</code>.</p>
+<p><code class="haskell">fromInteger</code> используется при обработке целочисленных литералов: когда мы пишем <code class="haskell">3</code>, компилятор переписывает это как применение значения типа <code class="haskell">Integer</code>, отвечающее тройке, к <code class="haskell">fromInteger</code>. Именно поэтому верно <code class="haskell">3 :: Num a =&gt; a</code>.</p>
 <h1 id="real"><span class="header-section-number">2</span> Real</h1>
 <p>Вспомогательный класс, служащий индикатором, что тип является числом, то есть может быть преобразован в <code class="haskell">Rational</code> (рациональная дробь с числителем и знаменателем имеющим тип <code class="haskell">Integer</code>):</p>
 <pre><code class="haskell">class (Num a, Ord a) =&gt; Real a where
