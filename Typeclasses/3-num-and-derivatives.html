@@ -36,7 +36,7 @@
 <li>Проблема, похожая на предыдущую: пусть у нас есть тип данных <code class="haskell">Matrix m n a</code>, где в <code class="haskell">m</code> и <code class="haskell">n</code> на уровне типов закодированы размерности матрицы (как это делать выходит за рамки курса). Тогда бы мы хотели, чтобы у операции умножения был тип <code class="haskell">Matrix m n a -&gt; Matrix n k a -&gt; Matrix m k a</code>, а <code class="haskell">(*)</code> этому не удовлетворяет.</li>
 </ul>
 <h1 id="real"><span class="header-section-number">3</span> Real</h1>
-<p>Вспомогательный класс, служащий индикатором, что тип является числом, то есть может быть преобразован в <code class="haskell">Rational</code> (рациональная дробь с числителем и знаменателем имеющим тип <code class="haskell">Integer</code>):</p>
+<p><code class="haskell">Real</code> — вспомогательный класс, служащий индикатором, что тип является числом, то есть может быть преобразован в <code class="haskell">Rational</code> (рациональная дробь с числителем и знаменателем имеющим тип <code class="haskell">Integer</code>):</p>
 <pre><code class="haskell">class (Num a, Ord a) =&gt; Real a where
    toRational :: a -&gt; Rational</code></pre>
 <h1 id="integral"><span class="header-section-number">4</span> Integral</h1>
@@ -62,9 +62,9 @@
 <li><code class="haskell">div</code> — целочисленное деление, округленное вниз.</li>
 <li><code class="haskell">mod</code> — остаток от деления, удовлетворяющий <code class="haskell">(x `div` y) * y + (x `mod` y) == x</code></li>
 </ul>
-<p><code class="haskell">quot</code> и <code class="haskell">rem</code> работают быстрее, чем <code class="haskell">div</code> и <code class="haskell">mod</code>, но на отрицательных числах выдают другие результаты (например, <code class="haskell">(-1) `rem` 2 == -1</code>, а не соответсвующее математическому определению остатка <code class="haskell">(-1) `mod` 2 == 1</code>). Но если алгоритм использет много арифметики и заранее известно, что числа будут положительны, то использование <code class="haskell">rem</code> даст значительный прирост скорости (<a href="http://stackoverflow.com/questions/6964392/speed-comparison-with-project-euler-c-vs-python-vs-erlang-vs-haskell/6964760#6964760">пример</a>).</p>
+<p><code class="haskell">quot</code> и <code class="haskell">rem</code> работают быстрее, чем <code class="haskell">div</code> и <code class="haskell">mod</code>, но на отрицательных числах выдают другие результаты (например, <code class="haskell">(-1) `rem` 2 == -1</code>, а не соответсвующее математическому определению остатка <code class="haskell">(-1) `mod` 2 == 1</code>). Но если алгоритм использует много арифметики и заранее известно, что числа будут положительны, то использование <code class="haskell">rem</code> даст значительный прирост скорости (<a href="http://stackoverflow.com/questions/6964392/speed-comparison-with-project-euler-c-vs-python-vs-erlang-vs-haskell/6964760#6964760">пример</a>).</p>
 <p><code class="haskell">Enum</code> просто говорит, что можно перечислять элементы этого типа и будет рассмотрен в следующем уроке.</p>
-<p>Нужно еще отметить функцию для преобразований из произвольных целых чисел <code class="haskell">fromIntegral</code>:</p>
+<p>Для кастов из целых чисел есть функция <code class="haskell">fromIntegral</code>:</p>
 <pre><code class="haskell">fromIntegral :: (Integral a, Num b) =&gt; a -&gt; b
 fromIntegral = fromInteger . toInteger</code></pre>
 <h1 id="fractional"><span class="header-section-number">5</span> Fractional</h1>
@@ -77,8 +77,8 @@ fromIntegral = fromInteger . toInteger</code></pre>
    recip = 1 / x
    x / y = x * recip y</code></pre>
 <p>Заметьте, что класс не наследуется от <code class="haskell">Real</code>, потому что, например, комплексные числа могут быть поделены друг на друга, но к вещественным числам не приводятся.</p>
-<p>Также в этом классе объявлена функция <code class="haskell">fromRational</code>, которая используется для литералов чисел с плавающей точкой. Например, <code class="haskell">3.2e-3</code> представляется как значение, соответствующее дроби <code class="haskell">32 / 10000</code> типа <code class="haskell">Rational</code>, примененяемое к <code class="haskell">fromRational</code>. Поэтому, <code class="haskell">3.2e-3 :: Fractional a =&gt; a</code>.</p>
-<p>По аналогии с <code class="haskell">fromIntegral</code> есть функция <code class="haskell">realToFrac</code> для преобразований из произвольных дробных чисел:</p>
+<p>Также в этом классе объявлена функция <code class="haskell">fromRational</code>, которая используется для литералов чисел с плавающей точкой. Например, литерал <code class="haskell">3.2e-3</code> в коде раскрывается как значение, соответствующее дроби <code class="haskell">32 / 10000</code> типа <code class="haskell">Rational</code>, примененяемое к <code class="haskell">fromRational</code>. Поэтому, <code class="haskell">3.2e-3 :: Fractional a =&gt; a</code>.</p>
+<p>По аналогии с <code class="haskell">fromIntegral</code> есть функция <code class="haskell">realToFrac</code> для кастов из произвольных чисел к дробным:</p>
 <pre><code class="haskell">realToFrac :: (Real a, Fractional b) =&gt; a -&gt; b
 realToFrac = fromRational . toRational</code></pre>
 <h1 id="floating"><span class="header-section-number">6</span> Floating</h1>
@@ -97,7 +97,7 @@ realToFrac = fromRational . toRational</code></pre>
    sqrt x = x ** 0.5
    tan x = sin x / cos x
    tanh x = sinh x / cosh x</code></pre>
-<p>Он опять же не наследуется от <code class="haskell">Real</code>, потому что эти операции имеют смысл для комплексных чисел.</p>
+<p>Он тоже не наследуется от <code class="haskell">Real</code>, потому что эти операции имеют смысл для комплексных чисел.</p>
 <h1 id="realfrac"><span class="header-section-number">7</span> RealFrac</h1>
 <p>Теперь функции округления вещественных чисел:</p>
 <pre><code class="haskell">class (Real a, Fractional a) =&gt; RealFrac a where
@@ -128,7 +128,9 @@ realToFrac = fromRational . toRational</code></pre>
 <p>Почти все функции относятся к внутреннему представлению чисел с плавающей точкой в виде <span class="math"><em>m</em> × <em>b</em><sup><em>n</em></sup></span>, где <span class="math"><em>m</em></span> — мантисса (<code class="haskell">significand</code>), <span class="math"><em>b</em></span> — основание (<code class="haskell">floatRadix</code>), а <span class="math"><em>n</em></span> — экспонента (<code class="haskell">exponent</code>).</p>
 <p>Выделяется из них всех функция <code class="haskell">atan2</code> — посчитать угол по вектора с координатами <code class="haskell">x, y</code>.</p>
 <h1 id="instance-table"><span class="header-section-number">9</span> Instance table</h1>
+<p>Ниже представлена таблица существующих инстансов для типов <code class="haskell">Int</code>, <code class="haskell">Rational</code>, <code class="haskell">Double</code>, <code class="haskell">Complex Double</code> (из <code class="haskell">Data.Complex</code>). И также инстансы для типа</p>
 <pre><code class="haskell">data Matrix3x3 = Matrix3x3 [[Double]]</code></pre>
+<p>которые имеют смысл.</p>
 <table>
 <thead>
 <tr class="header">
